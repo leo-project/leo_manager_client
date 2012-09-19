@@ -54,14 +54,21 @@ class LeoFSManager
     end
   end
 
-  def initialize(host, port, slave_port=nil)
-    @host = host
-    @port = port
-    @slave_port = slave_port
-    @socket = TCPSocket.new(@host, @port)
+  def initialize(*servers)
+    servers.map! do |server|
+      if server.is_a? String
+        m = server.match(/(?<host>.+):(?<port>[0-9]{1,5})/)
+        { :host => m.host, :port => m.port }
+      else
+        server
+      end
+    end
+    @servers = servers
+    @current_server = @servers.sample
+    @socket = TCPSocket.new(@current_server[:host], @current_server[:port])
   end
 
-  attr_reader :host, :port, :slave_port
+  attr_reader :servers, :current_server
 
   Commands.each do |command|
     define_method(command) do |*args|
@@ -81,7 +88,8 @@ end
 if __FILE__ == $PROGRAM_NAME
   require "pp"
 
-  m = LeoFSManager.new("localhost", 10020)
+  m = LeoFSManager.new("localhost:10020")
+  p m.servers
   p m.status
 =begin
   LeoFSUtils::Manager::Commands.each do |command|
