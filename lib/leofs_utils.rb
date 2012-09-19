@@ -25,14 +25,14 @@ class LeoFSManager
 
   class RecurStruct < DelegateClass(Struct)
     def initialize(hash)
-      values = hash.values.map do |s|
-        case s
+      values = hash.values.map do |value|
+        case value
         when Hash
-          self.class.new(s)
+          self.class.new(value)
         when Array
-          s.map {|ss| self.class.new ss }
+          value.map {|s| self.class.new(s) }
         else
-          s
+          value
         end
       end
       super(Struct.new(*hash.keys).new(*values))
