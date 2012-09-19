@@ -58,14 +58,25 @@ class LeoFSManager
     servers.map! do |server|
       if server.is_a? String
         m = server.match(/(?<host>.+):(?<port>[0-9]{1,5})/)
-        { :host => m.host, :port => m.port }
+        { :host => m[:host], :port => m[:port] }
       else
         server
       end
     end
+
     @servers = servers
     @current_server = @servers.sample
-    @socket = TCPSocket.new(@current_server[:host], @current_server[:port])
+
+    begin
+      @socket = TCPSocket.new(@current_server[:host], @current_server[:port])
+    rescue => ex
+      warn "faild to connect (server: #{@current_server})"
+      warn ex.message
+      @socket.close if @socket && !@socket.closed?
+      sleep 3
+      warn "retrying..."
+      retry
+    end
   end
 
   attr_reader :servers, :current_server
@@ -78,7 +89,10 @@ class LeoFSManager
         @socket.puts command
         hash = JSON.parse(@socket.gets, symbolize_names: true)
       rescue => ex
-        
+        warn "an error occured (server: #{@current_server})"
+        warn ex.message
+        @socket.close if @socket && !@socket.closed?
+        @servers.delete(@servers)
       end
       res_class.new(hash)
     end
@@ -89,7 +103,6 @@ if __FILE__ == $PROGRAM_NAME
   require "pp"
 
   m = LeoFSManager.new("localhost:10020")
-  p m.servers
   p m.status
 =begin
   LeoFSUtils::Manager::Commands.each do |command|
