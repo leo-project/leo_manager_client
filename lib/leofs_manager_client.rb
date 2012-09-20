@@ -42,12 +42,19 @@ class LeoFSManager
       super(Struct.new(*hash.keys).new(*values))
     end
 
+    def eql?(other)
+      to_hash == other.to_hash
+    end
+
     def inspect
       "#<#{self.class} #{to_hash}>"
     end
 
     def to_hash
-      Hash[__getobj__.each_pair.to_a]
+      hash = Hash[__getobj__.each_pair.to_a]
+      hash.each do |key, value|
+        hash[key] = value.to_hash if value.is_a? RecurStruct
+      end
     end
   end
 
@@ -129,9 +136,10 @@ class LeoFSManager
   Commands.each do |command|
     define_method(command) do |*args|
       command = __method__
+      line = args.unshift(command).join(" ")
       res_class = Response.const_get(self.class.classify(command))
       begin
-        @socket.puts command
+        @socket.puts line
         hash = JSON.parse(@socket.gets, symbolize_names: true)
       rescue => ex
         warn "An Error occured: #{ex.class} (server: #{@current_server})"
