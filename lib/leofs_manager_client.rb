@@ -1,9 +1,30 @@
+# ======================================================================
+# 
+#  LeoFS Manager Client
+# 
+#  Copyright (c) 2012 Rakuten, Inc.
+# 
+#  This file is provided to you under the Apache License,
+#  Version 2.0 (the "License"); you may not use this file
+#  except in compliance with the License.  You may obtain
+#  a copy of the License at
+# 
+#    http://www.apache.org/licenses/LICENSE-2.0
+# 
+#  Unless required by applicable law or agreed to in writing,
+#  software distributed under the License is distributed on an
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+#  specific language governing permissions and limitations
+#  under the License.
+# 
+# ======================================================================
 require "socket"
 require "json"
 require "delegate"
 
 class LeoFSManager
-  VERSION = "0.0.1"
+  VERSION = "0.2.0"
 
   Commands = [
     :detach, :suspend, :resume,
@@ -71,7 +92,7 @@ class LeoFSManager
     end
   end
 
-  class Response 
+  class Response
     Commands.each do |command|
       response = LeoFSManager.classify(command)
       const_set(response, Class.new(RecurStruct))
@@ -106,7 +127,7 @@ class LeoFSManager
 
   def set_current_server
     raise Error, "No servers to connect" if @servers.empty?
-    @current_server = @servers.first 
+    @current_server = @servers.first
   end
 
   def connect
