@@ -1,44 +1,48 @@
 # ======================================================================
-# 
+#
 #  LeoFS Manager Client
-# 
+#
 #  Copyright (c) 2012 Rakuten, Inc.
-# 
+#
 #  This file is provided to you under the Apache License,
 #  Version 2.0 (the "License"); you may not use this file
 #  except in compliance with the License.  You may obtain
 #  a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #  Unless required by applicable law or agreed to in writing,
 #  software distributed under the License is distributed on an
 #  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 #  KIND, either express or implied.  See the License for the
 #  specific language governing permissions and limitations
 #  under the License.
-# 
+#
 # ======================================================================
 require "socket"
 require "json"
 require "delegate"
 
 class LeoFSManager
-  VERSION = "0.2.0"
-
-  Commands = [
-    :detach, :suspend, :resume,
-    :start, :rebalance, :whereis,
-    :du, :compact, :purge,
-    :s3_gen_key, :s3_set_endpoint,
-    :s3_delete_endpoint,
-    :s3_get_endpoints,
-    :s3_get_buckets,
-    :version, :status,
-    :history, :quit
-  ]
-
-  Interval = 3
+  VERSION  = "0.2.0"
+  Commands = [:version,
+              :start,
+              :status,
+              :detach,
+              :suspend,
+              :resume,
+              :rebalance,
+              :whereis,
+              :du,
+              :compact,
+              :purge,
+              :s3_gen_key,
+              :s3_set_endpoint,
+              :s3_delete_endpoint,
+              :s3_get_endpoints,
+              :s3_add_bucket,
+              :s3_get_buckets]
+  # Interval = 3
 
   def self.classify(command)
     class_name = command.to_s
