@@ -17,11 +17,15 @@ class LeoFSManager
     :history, :quit
   ]
 
+  Interval = 3
+
   def self.classify(command)
     class_name = command.to_s
     class_name.gsub!(/([a-z0-9]+)_?/) { $1.capitalize }
     class_name
   end
+
+  class Error < StandardError; end
 
   class RecurStruct < DelegateClass(Struct)
     def initialize(hash)
@@ -47,6 +51,19 @@ class LeoFSManager
     end
   end
 
+  class Remover
+    def initialize(data)
+      @data = data
+    end
+
+    def call(*args)
+      socket = @data[0]
+      warn "Closing socket: #{socket}" if $DEBUG
+      socket.close if socket && !socket.closed?
+      warn "Closed socket: #{socket}" if $DEBUG
+    end
+  end
+
   class Response 
     Commands.each do |command|
       response = LeoFSManager.classify(command)
@@ -58,28 +75,56 @@ class LeoFSManager
     servers.map! do |server|
       if server.is_a? String
         m = server.match(/(?<host>.+):(?<port>[0-9]{1,5})/)
-        { :host => m[:host], :port => m[:port] }
+        host = m[:host]
+        port = Integer(m[:port])
+        raise Error, "Invalid Port Number: #{port}" unless 0 <= port && port <= 65535
+        { :host => host, :port => port, :retry_count => 0 }
       else
         server
       end
     end
 
-    @servers = servers
-    @current_server = @servers.sample
+    @data = []
+    final = Remover.new(@data)
+    ObjectSpace.define_finalizer(self, final)
 
+    @servers = servers
+    set_current_server
+    connect
+  end
+
+  attr_reader :servers, :current_server
+
+  private
+
+  def set_current_server
+    raise Error, "No servers to connect" if @servers.empty?
+    @current_server = @servers.first 
+  end
+
+  def connect
     begin
       @socket = TCPSocket.new(@current_server[:host], @current_server[:port])
+      @data[0] = @socket
     rescue => ex
-      warn "faild to connect (server: #{@current_server})"
+      warn "Faild to connect: #{ex.class} (server: #{@current_server})"
       warn ex.message
-      @socket.close if @socket && !@socket.closed?
-      sleep 3
-      warn "retrying..."
+      handle_exception
       retry
     end
   end
 
-  attr_reader :servers, :current_server
+  def handle_exception
+    @current_server[:retry_count] += 1
+    if @current_server[:retry_count] < 3
+      warn "Retrying..."
+    else
+      warn "Connecting another server..."
+      @socket.close if @socket && !@socket.closed?
+      @servers.delete(@current_server)
+      set_current_server
+    end
+  end
 
   Commands.each do |command|
     define_method(command) do |*args|
@@ -89,12 +134,12 @@ class LeoFSManager
         @socket.puts command
         hash = JSON.parse(@socket.gets, symbolize_names: true)
       rescue => ex
-        warn "an error occured (server: #{@current_server})"
+        warn "An Error occured: #{ex.class} (server: #{@current_server})"
         warn ex.message
-        @socket.close if @socket && !@socket.closed?
-        @servers.delete(@servers)
+        handle_exception
+        retry
       end
-      res_class.new(hash)
+      return res_class.new(hash)
     end
   end
 end
@@ -102,12 +147,7 @@ end
 if __FILE__ == $PROGRAM_NAME
   require "pp"
 
-  m = LeoFSManager.new("localhost:10020")
+  $DEBUG = true
+  m = LeoFSManager.new("localhost:10020", "localhost:10021")
   p m.status
-=begin
-  LeoFSUtils::Manager::Commands.each do |command|
-    puts command
-    m.send(command)
-  end
-=end
 end
