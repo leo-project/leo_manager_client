@@ -1,3 +1,4 @@
+module LeoFSManager
   ## ======================================================================
   ## CLASS
   ## ======================================================================
@@ -51,3 +52,4 @@
     attr_reader :version, :log_dir, :ring_cur, :ring_prev, :tota_mem_usage,
                 :system_mem_usage,  :procs_mem_usage, :ets_mem_usage, :num_of_procs
   end
+end
