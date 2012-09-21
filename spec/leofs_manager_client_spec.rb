@@ -49,45 +49,15 @@ describe LeoFSManager do
 
   it "has version" do
     defined?(LeoFSManager::VERSION).should eql "constant"
-    LeoFSManager::VERSION.should eql "0.0.1"
-  end
-
-  it "has command list" do
-    defined?(LeoFSManager::Commands).should eql "constant"
-    LeoFSManager::Commands.all? {|command| command.instance_of? Symbol }.should be_true
-  end
-
-  describe ".classify" do
-    subject { LeoFSManager.classify(:s3_gen_key) }
-
-    it "returns classified String" do
-      should be_a String
-      should_not be_empty
-      should eql "S3GenKey"
-    end
-  end
-
-  describe LeoFSManager::RecurStruct do
-    subject { LeoFSManager::RecurStruct.new(:a => { :b => :c }) }
-
-    it "is accesible like method call" do
-      subject.a.b.should eql :c
-    end
-
-    it "is recursively created" do
-      subject.class.should eql subject.a.class
-    end
+    LeoFSManager::VERSION.should eql "0.2.0"
   end
 
   it "raises error when it is passed invalid params" do
     lambda { LeoFSManager.new }.should raise_error
   end
 
-  it "succeeds to execute all commmands" do
-    LeoFSManager::Commands.each do |command|
-      json = @manager.send(command)
-      json[:result].chomp.should eql command.to_s
-    end
+  it "returns status" do
+    p @manager.status
   end
 
   it "fails to execute command which doesn't exist" do
