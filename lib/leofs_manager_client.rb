@@ -28,21 +28,21 @@ class LeoFSManager
 
   ## LeoFS-related commands:
   CMD_VERSION         = "version"
-  CMD_STATUS          = "status"
+  CMD_STATUS          = "status %s"
   CMD_START           = "start"
-  CMD_DETACH          = "detach"
-  CMD_SUSPEND         = "suspend"
-  CMD_RESUME          = "resume"
+  CMD_DETACH          = "detach %s"
+  CMD_SUSPEND         = "suspend %s"
+  CMD_RESUME          = "resume %s"
   CMD_REBALANCE       = "rebalance"
-  CMD_WHEREIS         = "whereis"
-  CMD_DU              = "du"
-  CMD_COMPACT         = "compact"
-  CMD_PURGE           = "purge"
-  CMD_S3_GEN_KEY      = "s3-gen-key"
-  CMD_S3_SET_ENDPOINT = "s3-set-endpoint"
-  CMD_S3_DEL_ENDPOINT = "s3-delete-endpoint"
-  CMD_S3_GET_ENDPOINT = "s3-get-endpoint"
-  CMD_S3_ADD_BUCKET   = "s3-add-bucket"
+  CMD_WHEREIS         = "whereis %s"
+  CMD_DU              = "du %s"
+  CMD_COMPACT         = "compact %s"
+  CMD_PURGE           = "purge %s"
+  CMD_S3_GEN_KEY      = "s3-gen-key %s"
+  CMD_S3_SET_ENDPOINT = "s3-set-endpoint %s"
+  CMD_S3_DEL_ENDPOINT = "s3-delete-endpoint %s"
+  CMD_S3_GET_ENDPOINT = "s3-get-endpoint %s"
+  CMD_S3_ADD_BUCKET   = "s3-add-bucket %s %s"
   CMD_S3_GET_BUCKETS  = "s3-get-buckets"
 
   attr_reader :servers, :current_server
@@ -84,20 +84,40 @@ class LeoFSManager
 
   ## @doc Retrieve LeoFS's system status from LeoFS Manager
   ## @return
-  def status
-    h = sender(CMD_STATUS)
-    ## @TODO - Map to SystemInfo.class and NodeInfo.class
-    return h
+  def status(*args)
+    node =
+      if args == [] then "" else args[0] end
+
+    h1 = sender(sprintf(CMD_STATUS, node))
+
+    if h1[:error] == nil && h1[:system_info] != nil
+      system_info = SystemInfo.new(h1[:system_info])
+
+      node_list = []
+      h1[:node_list].each do |h2|
+        node_list << NodeInfo.new(h2)
+      end
+      return {:system_info => system_info, :node_list => node_list}
+
+    elsif h1[:error] == nil && h1[:node_stat] != nil
+      node_stat = NodeStat.new(h1[:node_stat])
+      return node_stat
+    else
+      cause = h1[:error]
+      raise cause
+    end
   end
+
 
   ## @doc Launch LeoFS's storage cluster
   ## @return null
   def start
     h = sender(CMD_START)
-    if h[:result]
-      null
+    unless h[:error] == nil
+      cause = h[:error]
+      raise cause
     else
-      p "Exception!!"
+      nil
     end
   end
 
@@ -107,18 +127,53 @@ class LeoFSManager
   ## ======================================================================
   ## @doc System Information Model
   ##
-  class SystemInfo    
+  class SystemInfo
+    attr_reader :version, :n, :r, :w, :d, :ring_size, :ring_cur, :ring_prev
+
+    def initialize(h)
+      @version = h[:version]
+      @n = h[:n]
+      @r = h[:r]
+      @w = h[:w]
+      @d = h[:d]
+      @ring_size = h[:ring_size]
+      @ring_cur  = h[:ring_cur]
+      @ring_prev = h[:ring_prev]
+    end
   end
 
   ## @doc Node Info Model
   ##
   class NodeInfo
+    attr_reader :type, :node, :state, :ring_cur, :ring_prev, :joined_at
+
+    def initialize(h)
+      @type      = h[:type]
+      @node      = h[:node]
+      @state     = h[:state]
+      @ring_cur  = h[:ring_cur]
+      @ring_prev = h[:ring_prev]
+      @joined_at = h[:when]
+    end
   end
 
-  ## @doc Error
+  ## @doc Node Status Model
   ##
-  class Error < StandardError; end
+  class NodeStat
+    attr_reader :version, :log_dir, :ring_cur, :ring_prev, :tota_mem_usage, :system_mem_usage, :procs_mem_usage, :ets_mem_usage, :num_of_procs
 
+    def initialize(h)
+      @type      = h[:version]
+      @log_dir   = h[:log_dir]
+      @ring_cur  = h[:ring_cur]
+      @ring_prev = h[:ring_prev]
+      @total_mem_usage  = h[:total_mem_usage]
+      @system_mem_usage = h[:system_mem_usage]
+      @procs_mem_usage  = h[:procs_mem_usage]
+      @ets_mem_usage    = h[:ets_mem_usage]
+      @num_of_procs     = h[:num_of_procs]
+    end
+  end
 
   ## @doc
   ##
@@ -129,7 +184,6 @@ class LeoFSManager
 
     def call(*args)
       socket = @data[0]
-      warn "Closing socket: #{socket}" if $DEBUG
       socket.close if socket && !socket.closed?
       warn "Closed socket: #{socket}" if $DEBUG
     end
@@ -194,14 +248,15 @@ end
 
 
 ## ======================================================================
-## 
+##
 ## ======================================================================
 if __FILE__ == $PROGRAM_NAME
   require "pp"
 
   $DEBUG = true
   m = LeoFSManager.new("localhost:10020", "localhost:10021")
-  p m.status
   p m.version
+  p m.status
+  p m.status("storage_0@127.0.0.1")
 
 end
