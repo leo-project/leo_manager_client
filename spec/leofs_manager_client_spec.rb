@@ -117,7 +117,7 @@ describe LeoFSManager do
 
   describe "#status" do
     it "returns Hash" do
-      @manager.status.should be_a Hash
+      @manager.status.should be_a Status
     end
 
     it "returns SystemInfo" do

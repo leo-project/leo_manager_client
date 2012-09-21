@@ -22,7 +22,7 @@
 require "socket"
 require "json"
 
-require_relative "leofs_manager_client/class_def"
+require_relative "leofs_manager_client/response_def"
 
 module LeoFSManager
   VERSION = "0.2.0"
@@ -86,15 +86,7 @@ module LeoFSManager
     ## @doc Retrieve LeoFS's system status from LeoFS Manager
     ## @return
     def status(node=nil)
-      h1 = sender(CMD_STATUS % node)
-      if node
-        node_stat = NodeStat.new(h1[:node_stat])
-        return node_stat
-      else
-        system_info = SystemInfo.new(h1[:system_info])
-        node_list = h1[:node_list].map {|h2| NodeInfo.new(h2) }
-        return {:system_info => system_info, :node_list => node_list}
-      end
+      Status.new(sender(CMD_STATUS % node))
     end
 
     ## @doc Launch LeoFS's storage cluster
@@ -203,7 +195,6 @@ module LeoFSManager
       rescue => ex
         warn "Faild to connect: #{ex.class} (server: #{@current_server})"
         warn ex.message
-        handle_exception
         retry_count += 1
         if retry_count > 3
           warn "Connecting another server..."
