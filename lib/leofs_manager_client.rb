@@ -26,23 +26,23 @@ class LeoFSManager
   VERSION = "0.2.0"
 
   ## LeoFS-related commands:
-  CMD_VERSION         = "version"
-  CMD_STATUS          = "status %s"
-  CMD_START           = "start"
-  CMD_DETACH          = "detach %s"
-  CMD_SUSPEND         = "suspend %s"
-  CMD_RESUME          = "resume %s"
-  CMD_REBALANCE       = "rebalance"
-  CMD_WHEREIS         = "whereis %s"
-  CMD_DU              = "du %s"
-  CMD_COMPACT         = "compact %s"
-  CMD_PURGE           = "purge %s"
-  CMD_S3_GEN_KEY      = "s3-gen-key %s"
-  CMD_S3_SET_ENDPOINT = "s3-set-endpoint %s"
-  CMD_S3_DEL_ENDPOINT = "s3-delete-endpoint %s"
-  CMD_S3_GET_ENDPOINT = "s3-get-endpoint %s"
-  CMD_S3_ADD_BUCKET   = "s3-add-bucket %s %s"
-  CMD_S3_GET_BUCKETS  = "s3-get-buckets"
+  CMD_VERSION          = "version"
+  CMD_STATUS           = "status %s"
+  CMD_START            = "start"
+  CMD_DETACH           = "detach %s"
+  CMD_SUSPEND          = "suspend %s"
+  CMD_RESUME           = "resume %s"
+  CMD_REBALANCE        = "rebalance"
+  CMD_WHEREIS          = "whereis %s"
+  CMD_DU               = "du %s"
+  CMD_COMPACT          = "compact %s"
+  CMD_PURGE            = "purge %s"
+  CMD_S3_GEN_KEY       = "s3-gen-key %s"
+  CMD_S3_SET_ENDPOINT  = "s3-set-endpoint %s"
+  CMD_S3_DEL_ENDPOINT  = "s3-delete-endpoint %s"
+  CMD_S3_GET_ENDPOINTS = "s3-get-endpoints"
+  CMD_S3_ADD_BUCKET    = "s3-add-bucket %s %s"
+  CMD_S3_GET_BUCKETS   = "s3-get-buckets"
 
   attr_reader :servers, :current_server
 
@@ -101,8 +101,86 @@ class LeoFSManager
   ## @return null
   def start
     h = sender(CMD_START)
-    raise h[:error] if h.has_key?([:error])
+    raise h[:error] if h.has_key?(:error)
     nil
+  end
+
+  def detach(node)
+    h = sender(CMD_DETACH % node)
+    raise h[:error] if h.has_key?(:error)
+    h[:result]
+  end
+
+  def resume(node)
+    h = sender(CMD_RESUME % node)
+    raise h[:error] if h.has_key?(:error)
+    h[:result]
+  end
+
+  def rebalance
+    h = sender(CMD_REBALANCE % node)
+    raise h[:error] if h.has_key?(:error)
+    h[:result]
+  end
+
+  def whereis(path)
+    h = sender(CMD_WHEREIS % path)
+    raise h[:error] if h.has_key?(:error)
+    h[:result]
+  end
+
+  def du(node)
+    h = sender(CMD_DU % node)
+    raise h[:error] if h.has_key?(:error)
+    h[:result]
+  end
+
+  def compact(node)
+    h = sender(CMD_COMPACT % node)
+    raise h[:error] if h.has_key?(:error)
+    h[:result]
+  end
+
+  def purge(path)
+    h = sender(CMD_PURGE % path)
+    raise h[:error] if h.has_key?(:error)
+    h[:result]
+  end
+
+  def s3_gen_key(user_id)
+    h = sender(CMD_S3_GEN_KEY % user_id)
+    raise h[:error] if h.has_key?(:error)
+    h[:result]
+  end
+
+  def s3_set_endpoint(endpoint)
+    h = sender(CMD_S3_SET_ENDPOINT % endpoint)
+    raise h[:error] if h.has_key?(:error)
+    h[:result]
+  end
+
+  def s3_del_endpoint(endpoint)
+    h = sender(CMD_S3_DEL_ENDPOINT % endpoint)
+    raise h[:error] if h.has_key?(:error)
+    h[:result]
+  end
+
+  def s3_get_endpoints(endpoint)
+    h = sender(CMD_S3_GET_ENDPOINTS % endpoint)
+    raise h[:error] if h.has_key?(:error)
+    h[:result]
+  end
+
+  def s3_add_endpoint(bucket, access_key_id)
+    h = sender(CMD_S3_ADD_ENDPOINT % [endpoint, access_key_id])
+    raise h[:error] if h.has_key?(:error)
+    h[:result]
+  end
+
+  def s3_get_buckets
+    h = sender(CMD_S3_GET_BUCKETS)
+    raise h[:error] if h.has_key?(:error)
+    h[:result]
   end
 
   ## ======================================================================
@@ -143,7 +221,8 @@ class LeoFSManager
   ## @doc Node Status Model
   ##
   class NodeStat
-    attr_reader :version, :log_dir, :ring_cur, :ring_prev, :tota_mem_usage, :system_mem_usage, :procs_mem_usage, :ets_mem_usage, :num_of_procs
+    attr_reader :version, :log_dir, :ring_cur, :ring_prev, :tota_mem_usage, :system_mem_usage, 
+                :procs_mem_usage, :ets_mem_usage, :num_of_procs
 
     def initialize(h)
       @type      = h[:version]
