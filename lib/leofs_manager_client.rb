@@ -50,8 +50,6 @@ module LeoFSManager
   ## @doc System Information Model
   ##
   class SystemInfo
-    attr_reader :version, :n, :r, :w, :d, :ring_size, :ring_cur, :ring_prev
-
     def initialize(h)
       @version = h[:version]
       @n = h[:n]
@@ -62,13 +60,13 @@ module LeoFSManager
       @ring_cur  = h[:ring_cur]
       @ring_prev = h[:ring_prev]
     end
+
+    attr_reader :version, :n, :r, :w, :d, :ring_size, :ring_cur, :ring_prev
   end
 
   ## @doc Node Info Model
   ##
   class NodeInfo
-    attr_reader :type, :node, :state, :ring_cur, :ring_prev, :joined_at
-
     def initialize(h)
       @type      = h[:type]
       @node      = h[:node]
@@ -77,14 +75,13 @@ module LeoFSManager
       @ring_prev = h[:ring_prev]
       @joined_at = h[:when]
     end
+
+    attr_reader :type, :node, :state, :ring_cur, :ring_prev, :joined_at
   end
 
   ## @doc Node Status Model
   ##
   class NodeStat
-    attr_reader :version, :log_dir, :ring_cur, :ring_prev, :tota_mem_usage, :system_mem_usage, 
-                :procs_mem_usage, :ets_mem_usage, :num_of_procs
-
     def initialize(h)
       @type      = h[:version]
       @log_dir   = h[:log_dir]
@@ -96,6 +93,9 @@ module LeoFSManager
       @ets_mem_usage    = h[:ets_mem_usage]
       @num_of_procs     = h[:num_of_procs]
     end
+
+    attr_reader :version, :log_dir, :ring_cur, :ring_prev, :tota_mem_usage,
+                :system_mem_usage,  :procs_mem_usage, :ets_mem_usage, :num_of_procs
   end
 
   ## @doc
@@ -318,7 +318,7 @@ if __FILE__ == $PROGRAM_NAME
   require "pp"
 
   $DEBUG = true
-  m = LeoFSManager.new("localhost:10020", "localhost:10021")
+  m = LeoFSManager::Client.new("localhost:10020", "localhost:10021")
   p m.version
   p m.status
   p m.status("storage_0@127.0.0.1")
