@@ -119,30 +119,15 @@ module LeoFSManager
     ## @doc
     ##
     def initialize(*servers)
-      servers.map! do |server|
-        if server.is_a? String
-          m = server.match(/(?<host>.+):(?<port>[0-9]{1,5})/)
-          host = m[:host]
-          port = Integer(m[:port])
-  
-          raise Error, "Invalid Port Number: #{port}" unless 0 <= port && port <= 65535
-          { :host => host, :port => port, :retry_count => 0 }
-        else
-          server
-        end
-      end
-  
-      @data = []
-      final = Remover.new(@data)
+      @servers = parse_servers(servers)
+      set_current_server
+      final = Remover.new(@data = [])
       ObjectSpace.define_finalizer(self, final)
-  
-      @servers = servers
-      res = set_current_server
       connect
     end
 
-    attr_reader :servers, :current_server
-  
+    attr_reader :servers, :current_server 
+ 
     ## @doc Retrieve LeoFS's version from LeoFS Manager
     ## @return version
     def version
@@ -227,6 +212,21 @@ module LeoFSManager
     ## PRIVATE
     ## ======================================================================
     private
+
+    def parse_servers(servers)
+      servers.map do |server|
+        if server.is_a? String
+          m = server.match(/(?<host>.+):(?<port>[0-9]{1,5})/)
+          host = m[:host]
+          port = Integer(m[:port])
+  
+          raise Error, "Invalid Port Number: #{port}" unless 0 <= port && port <= 65535
+          { :host => host, :port => port, :retry_count => 0 }
+        else
+          server
+        end
+      end
+    end
 
     ## @doc
     ##
