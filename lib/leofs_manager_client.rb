@@ -22,32 +22,11 @@
 require "socket"
 require "json"
 
-require_relative "leofs_manager_client/response_def"
+require_relative "leofs_manager_client/leofs_manager_models"
 
 module LeoFSManager
   VERSION = "0.2.0"
 
-  ## LeoFS-related commands:
-  CMD_VERSION          = "version"
-  CMD_STATUS           = "status %s"
-  CMD_START            = "start"
-  CMD_DETACH           = "detach %s"
-  CMD_SUSPEND          = "suspend %s"
-  CMD_RESUME           = "resume %s"
-  CMD_REBALANCE        = "rebalance"
-  CMD_WHEREIS          = "whereis %s"
-  CMD_DU               = "du %s"
-  CMD_COMPACT          = "compact %s"
-  CMD_PURGE            = "purge %s"
-  CMD_S3_GEN_KEY       = "s3-gen-key %s"
-  CMD_S3_SET_ENDPOINT  = "s3-set-endpoint %s"
-  CMD_S3_DEL_ENDPOINT  = "s3-delete-endpoint %s"
-  CMD_S3_GET_ENDPOINTS = "s3-get-endpoints"
-  CMD_S3_ADD_BUCKET    = "s3-add-bucket %s %s"
-  CMD_S3_GET_BUCKETS   = "s3-get-buckets"
-
-  ## @doc
-  ## 
   class Remover
     def initialize(data)
       @data = data
@@ -61,10 +40,29 @@ module LeoFSManager
   end
 
   class Client
+    ## LeoFS-related commands:
+    CMD_VERSION          = "version"
+    CMD_STATUS           = "status %s"
+    CMD_START            = "start"
+    CMD_DETACH           = "detach %s"
+    CMD_SUSPEND          = "suspend %s"
+    CMD_RESUME           = "resume %s"
+    CMD_REBALANCE        = "rebalance"
+    CMD_WHEREIS          = "whereis %s"
+    CMD_DU               = "du %s"
+    CMD_COMPACT          = "compact %s"
+    CMD_PURGE            = "purge %s"
+    CMD_S3_GEN_KEY       = "s3-gen-key %s"
+    CMD_S3_SET_ENDPOINT  = "s3-set-endpoint %s"
+    CMD_S3_DEL_ENDPOINT  = "s3-delete-endpoint %s"
+    CMD_S3_GET_ENDPOINTS = "s3-get-endpoints"
+    CMD_S3_ADD_BUCKET    = "s3-add-bucket %s %s"
+    CMD_S3_GET_BUCKETS   = "s3-get-buckets"
+
     ## ======================================================================
     ## APIs
     ## ======================================================================
-    ## @doc
+    ## @doc Constructor
     ##
     def initialize(*servers)
       @servers = parse_servers(servers)
@@ -74,15 +72,15 @@ module LeoFSManager
       connect
     end
 
-    attr_reader :servers, :current_server 
- 
+    attr_reader :servers, :current_server
+
     ## @doc Retrieve LeoFS's version from LeoFS Manager
     ## @return version
     def version
       h = sender(CMD_VERSION)
       return h[:result]
     end
-  
+
     ## @doc Retrieve LeoFS's system status from LeoFS Manager
     ## @return
     def status(node=nil)
@@ -95,67 +93,100 @@ module LeoFSManager
       sender(CMD_START)
       nil
     end
-  
+
+    ## @doc Leave a node from the storage cluster
+    ##
     def detach(node)
       sender(CMD_DETACH % node)
       nil
     end
-  
+
+    ## @doc Suspend a node in the storage cluster
+    ##
+    def suspend(node)
+      sender(CMD_SUSPEND % node)
+      nil
+    end
+
+    ## @doc Resume a node in the storage cluster
+    ##
     def resume(node)
       sender(CMD_RESUME % node)
       nil
     end
-  
+
+    ## @doc Execute 'rebalance' in the storage cluster
+    ##
     def rebalance
       sender(CMD_REBALANCE)
       nil
     end
-  
+
+    ## @doc Retrieve assigned file information
+    ##
     def whereis(path)
-      buckets = sender(CMD_WHEREIS % path)[:buckets]
-      buckets.map {|bucket| WhereInfo.new(bucket) }
+      assigned_info = sender(CMD_WHEREIS % path)[:assigned_info]
+      assigned_info.map {|h| AssignedFile.new(h)}
     end
-  
+
+    ## @doc Retrieve storage status from the storage
+    ##
     def du(node)
-      DiskUsage.new(sender(CMD_DU % node))
+      StorageStat.new(sender(CMD_DU % node))
     end
-  
+
+    ## @doc Execute 'compaction'
+    ##
     def compact(node)
       sender(CMD_COMPACT % node)
       nil
     end
-  
+
+    ## @doc Purge a cache in gateways
+    ##
     def purge(path)
       sender(CMD_PURGE % path)
       nil
     end
-  
+
+    ## @doc Generate credential for LeoFS
+    ##
     def s3_gen_key(user_id)
       Credential.new(sender(CMD_S3_GEN_KEY % user_id))
     end
-  
+
+    ## @doc Insert an endpoint in the system
+    ##
     def s3_set_endpoint(endpoint)
       sender(CMD_S3_SET_ENDPOINT % endpoint)
       nil
     end
-  
+
+    ## @doc Remove an endpoint from the system
+    ##
     def s3_del_endpoint(endpoint)
       sender(CMD_S3_DEL_ENDPOINT % endpoint)
       nil
     end
-  
+
+    ## @doc Retrieve an endpoint in the system
+    ##
     def s3_get_endpoints
       endpoints = sender(CMD_S3_GET_ENDPOINTS)[:endpoints]
       endpoints.each {|endpoint| Endpoint.new(endpoint) }
     end
-  
+
+    ## @doc Insert a bucket in the system
+    ##
     def s3_add_bucket(bucket, access_key_id)
       sender(CMD_S3_ADD_BUCKET % [bucket, access_key_id])[:result]
     end
-  
+
+    ## @doc Retrieve all buckets from the system
+    ##
     def s3_get_buckets
-      sender(CMD_S3_GET_BUCKETS)
-      nil
+      buckets = sender(CMD_S3_GET_BUCKETS)[:buckets]
+      buckets.map {|h| Bucket.new(h)}
     end
 
     ## ======================================================================
@@ -169,7 +200,7 @@ module LeoFSManager
           m = server.match(/(?<host>.+):(?<port>[0-9]{1,5})/)
           host = m[:host]
           port = Integer(m[:port])
-  
+
           raise Error, "Invalid Port Number: #{port}" unless 0 <= port && port <= 65535
           { :host => host, :port => port, :retry_count => 0 }
         else
@@ -222,9 +253,7 @@ module LeoFSManager
   end
 end
 
-## ======================================================================
-##
-## ======================================================================
+
 if __FILE__ == $PROGRAM_NAME
   require "pp"
 
@@ -233,4 +262,6 @@ if __FILE__ == $PROGRAM_NAME
   p m.version
   p m.status
   p m.status("storage_0@127.0.0.1")
+  p m.s3_get_buckets()
+  p m.whereis("photo/hawaii-0.jpg")
 end
