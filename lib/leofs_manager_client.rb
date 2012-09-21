@@ -24,65 +24,104 @@ require "json"
 require "delegate"
 
 class LeoFSManager
-  VERSION  = "0.2.0"
-  Commands = [:version,
-              :start,
-              :status,
-              :detach,
-              :suspend,
-              :resume,
-              :rebalance,
-              :whereis,
-              :du,
-              :compact,
-              :purge,
-              :s3_gen_key,
-              :s3_set_endpoint,
-              :s3_delete_endpoint,
-              :s3_get_endpoints,
-              :s3_add_bucket,
-              :s3_get_buckets]
-  # Interval = 3
+  VERSION = "0.2.0"
 
-  def self.classify(command)
-    class_name = command.to_s
-    class_name.gsub!(/([a-z0-9]+)_?/) { $1.capitalize }
-    class_name
+  ## LeoFS-related commands:
+  CMD_VERSION         = "version"
+  CMD_STATUS          = "status"
+  CMD_START           = "start"
+  CMD_DETACH          = "detach"
+  CMD_SUSPEND         = "suspend"
+  CMD_RESUME          = "resume"
+  CMD_REBALANCE       = "rebalance"
+  CMD_WHEREIS         = "whereis"
+  CMD_DU              = "du"
+  CMD_COMPACT         = "compact"
+  CMD_PURGE           = "purge"
+  CMD_S3_GEN_KEY      = "s3-gen-key"
+  CMD_S3_SET_ENDPOINT = "s3-set-endpoint"
+  CMD_S3_DEL_ENDPOINT = "s3-delete-endpoint"
+  CMD_S3_GET_ENDPOINT = "s3-get-endpoint"
+  CMD_S3_ADD_BUCKET   = "s3-add-bucket"
+  CMD_S3_GET_BUCKETS  = "s3-get-buckets"
+
+  attr_reader :servers, :current_server
+
+  ## ======================================================================
+  ## APIs
+  ## ======================================================================
+  ## @doc
+  ##
+  def initialize(*servers)
+    servers.map! do |server|
+      if server.is_a? String
+        m = server.match(/(?<host>.+):(?<port>[0-9]{1,5})/)
+        host = m[:host]
+        port = Integer(m[:port])
+
+        raise Error, "Invalid Port Number: #{port}" unless 0 <= port && port <= 65535
+        { :host => host, :port => port, :retry_count => 0 }
+      else
+        server
+      end
+    end
+
+    @data = []
+    final = Remover.new(@data)
+    ObjectSpace.define_finalizer(self, final)
+
+    @servers = servers
+    res = set_current_server
+    connect
   end
 
+  ## @doc Retrieve LeoFS's version from LeoFS Manager
+  ## @return version
+  def version
+    h = sender(CMD_VERSION)
+    return  h[:result]
+  end
+
+  ## @doc Retrieve LeoFS's system status from LeoFS Manager
+  ## @return
+  def status
+    h = sender(CMD_STATUS)
+    ## @TODO - Map to SystemInfo.class and NodeInfo.class
+    return h
+  end
+
+  ## @doc Launch LeoFS's storage cluster
+  ## @return null
+  def start
+    h = sender(CMD_START)
+    if h[:result]
+      null
+    else
+      p "Exception!!"
+    end
+  end
+
+
+  ## ======================================================================
+  ## CLASS
+  ## ======================================================================
+  ## @doc System Information Model
+  ##
+  class SystemInfo    
+  end
+
+  ## @doc Node Info Model
+  ##
+  class NodeInfo
+  end
+
+  ## @doc Error
+  ##
   class Error < StandardError; end
 
-  class RecurStruct < DelegateClass(Struct)
-    def initialize(hash)
-      values = hash.values.map do |value|
-        case value
-        when Hash
-          self.class.new(value)
-        when Array
-          value.map {|s| self.class.new(s) }
-        else
-          value
-        end
-      end
-      super(Struct.new(*hash.keys).new(*values))
-    end
 
-    def eql?(other)
-      to_hash == other.to_hash
-    end
-
-    def inspect
-      "#<#{self.class} #{to_hash}>"
-    end
-
-    def to_hash
-      hash = Hash[__getobj__.each_pair.to_a]
-      hash.each do |key, value|
-        hash[key] = value.to_hash if value.is_a? RecurStruct
-      end
-    end
-  end
-
+  ## @doc
+  ##
   class Remover
     def initialize(data)
       @data = data
@@ -96,44 +135,21 @@ class LeoFSManager
     end
   end
 
-  class Response
-    Commands.each do |command|
-      response = LeoFSManager.classify(command)
-      const_set(response, Class.new(RecurStruct))
-    end
-  end
 
-  def initialize(*servers)
-    servers.map! do |server|
-      if server.is_a? String
-        m = server.match(/(?<host>.+):(?<port>[0-9]{1,5})/)
-        host = m[:host]
-        port = Integer(m[:port])
-        raise Error, "Invalid Port Number: #{port}" unless 0 <= port && port <= 65535
-        { :host => host, :port => port, :retry_count => 0 }
-      else
-        server
-      end
-    end
-
-    @data = []
-    final = Remover.new(@data)
-    ObjectSpace.define_finalizer(self, final)
-
-    @servers = servers
-    set_current_server
-    connect
-  end
-
-  attr_reader :servers, :current_server
-
+  ## ======================================================================
+  ## PRIVATE
+  ## ======================================================================
   private
 
+  ## @doc
+  ##
   def set_current_server
     raise Error, "No servers to connect" if @servers.empty?
     @current_server = @servers.first
   end
 
+  ## @doc Connect to LeoFS Manager
+  ##
   def connect
     begin
       @socket = TCPSocket.new(@current_server[:host], @current_server[:port])
@@ -146,6 +162,8 @@ class LeoFSManager
     end
   end
 
+  ## @doc Handle exceptions
+  ##
   def handle_exception
     @current_server[:retry_count] += 1
     if @current_server[:retry_count] < 3
@@ -158,29 +176,32 @@ class LeoFSManager
     end
   end
 
-  Commands.each do |command|
-    define_method(command) do |*args|
-      command = __method__
-      line = args.unshift(command).join(" ")
-      res_class = Response.const_get(self.class.classify(command))
-      begin
-        @socket.puts line
-        hash = JSON.parse(@socket.gets, symbolize_names: true)
-      rescue => ex
-        warn "An Error occured: #{ex.class} (server: #{@current_server})"
-        warn ex.message
-        handle_exception
-        retry
-      end
-      return res_class.new(hash)
+  ## @doc Send a request to LeoFS Manager
+  ## @return Hash
+  def sender(command)
+    begin
+      @socket.puts command
+      hash = JSON.parse(@socket.gets, symbolize_names: true)
+    rescue => ex
+      warn "An Error occured: #{ex.class} (server: #{@current_server})"
+      warn ex.message
+      handle_exception
+      retry
     end
+    return hash
   end
 end
 
+
+## ======================================================================
+## 
+## ======================================================================
 if __FILE__ == $PROGRAM_NAME
   require "pp"
 
   $DEBUG = true
   m = LeoFSManager.new("localhost:10020", "localhost:10021")
   p m.status
+  p m.version
+
 end
