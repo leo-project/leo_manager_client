@@ -1,4 +1,4 @@
-# LeofsUtils
+# leofs_manager_client
 
 TODO: Write a gem description
 
@@ -6,7 +6,7 @@ TODO: Write a gem description
 
 Add this line to your application's Gemfile:
 
-    gem 'leofs_utils'
+    gem 'leofs_manager'
 
 And then execute:
 
@@ -14,7 +14,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install leofs_utils
+    $ gem install leofs_manager
 
 ## Usage
 
