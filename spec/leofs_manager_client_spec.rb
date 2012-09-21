@@ -64,7 +64,7 @@ module Dummy
         loop do
           socket = server.accept
           while line = socket.gets
-            line.chomp!
+            line.rstrip!
             case line
             when "status"
               result = Status

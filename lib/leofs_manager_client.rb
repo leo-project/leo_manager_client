@@ -153,105 +153,74 @@ module LeoFSManager
     ## @doc Retrieve LeoFS's system status from LeoFS Manager
     ## @return
     def status(node=nil)
-      command = CMD_STATUS % node
-      command.rstrip!
-      h1 = sender(command)
-  
-      raise h1[:error] if h1.has_key?(:error)
-      if h1.has_key?(:system_info)
+      h1 = sender(CMD_STATUS % node)
+      if node
+        node_stat = NodeStat.new(h1[:node_stat])
+        return node_stat
+      else
         system_info = SystemInfo.new(h1[:system_info])
         node_list = h1[:node_list].map {|h2| NodeInfo.new(h2) }
         return {:system_info => system_info, :node_list => node_list}
-      elsif h1.has_key?(:node_stat)
-        node_stat = NodeStat.new(h1[:node_stat])
-        return node_stat
       end
     end
 
     ## @doc Launch LeoFS's storage cluster
-    ## @return null
+    ## @return nil
     def start
-      h = sender(CMD_START)
-      raise h[:error] if h.has_key?(:error)
+      sender(CMD_START)
       nil
     end
   
     def detach(node)
-      h = sender(CMD_DETACH % node)
-      raise h[:error] if h.has_key?(:error)
-      h[:result]
+      sender(CMD_DETACH % node)[:result]
     end
   
     def resume(node)
-      h = sender(CMD_RESUME % node)
-      raise h[:error] if h.has_key?(:error)
-      h[:result]
+      sender(CMD_RESUME % node)[:result]
     end
   
     def rebalance
-      h = sender(CMD_REBALANCE)
-      raise h[:error] if h.has_key?(:error)
-      h[:result]
+      sender(CMD_REBALANCE)[:result]
     end
   
     def whereis(path)
-      h = sender(CMD_WHEREIS % path)
-      raise h[:error] if h.has_key?(:error)
-      h[:result]
+      sender(CMD_WHEREIS % path)[:result]
     end
   
     def du(node)
-      h = sender(CMD_DU % node)
-      raise h[:error] if h.has_key?(:error)
-      h[:result]
+      sender(CMD_DU % node)[:result]
     end
   
     def compact(node)
-      h = sender(CMD_COMPACT % node)
-      raise h[:error] if h.has_key?(:error)
-      h[:result]
+      sender(CMD_COMPACT % node)[:result]
     end
   
     def purge(path)
-      h = sender(CMD_PURGE % path)
-      raise h[:error] if h.has_key?(:error)
-      h[:result]
+      sender(CMD_PURGE % path)[:result]
     end
   
     def s3_gen_key(user_id)
-      h = sender(CMD_S3_GEN_KEY % user_id)
-      raise h[:error] if h.has_key?(:error)
-      h[:result]
+      sender(CMD_S3_GEN_KEY % user_id)[:result]
     end
   
     def s3_set_endpoint(endpoint)
-      h = sender(CMD_S3_SET_ENDPOINT % endpoint)
-      raise h[:error] if h.has_key?(:error)
-      h[:result]
+      sender(CMD_S3_SET_ENDPOINT % endpoint)[:result]
     end
   
     def s3_del_endpoint(endpoint)
-      h = sender(CMD_S3_DEL_ENDPOINT % endpoint)
-      raise h[:error] if h.has_key?(:error)
-      h[:result]
+      sender(CMD_S3_DEL_ENDPOINT % endpoint)[:result]
     end
   
     def s3_get_endpoints
-      h = sender(CMD_S3_GET_ENDPOINTS)
-      raise h[:error] if h.has_key?(:error)
-      h[:result]
+      sender(CMD_S3_GET_ENDPOINTS)[:result]
     end
   
     def s3_add_bucket(bucket, access_key_id)
-      h = sender(CMD_S3_ADD_BUCKET % [bucket, access_key_id])
-      raise h[:error] if h.has_key?(:error)
-      h[:result]
+      sender(CMD_S3_ADD_BUCKET % [bucket, access_key_id])[:result]
     end
   
     def s3_get_buckets
-      h = sender(CMD_S3_GET_BUCKETS)
-      raise h[:error] if h.has_key?(:error)
-      h[:result]
+      sender(CMD_S3_GET_BUCKETS)[:result]
     end
 
     ## ======================================================================
@@ -269,6 +238,7 @@ module LeoFSManager
     ## @doc Connect to LeoFS Manager
     ##
     def connect
+      retry_count = 0
       begin
         @socket = TCPSocket.new(@current_server[:host], @current_server[:port])
         @data[0] = @socket
@@ -276,21 +246,15 @@ module LeoFSManager
         warn "Faild to connect: #{ex.class} (server: #{@current_server})"
         warn ex.message
         handle_exception
+        retry_count += 1
+        if retry_count > 3
+          warn "Connecting another server..."
+          @socket.close if @socket && !@socket.closed?
+          @servers.delete(@current_server)
+          set_current_server
+          retry_count = 0
+        end
         retry
-      end
-    end
-
-    ## @doc Handle exceptions
-    ##
-    def handle_exception
-      @current_server[:retry_count] += 1
-      if @current_server[:retry_count] < 3
-        warn "Retrying..."
-      else
-        warn "Connecting another server..."
-        @socket.close if @socket && !@socket.closed?
-        @servers.delete(@current_server)
-        set_current_server
       end
     end
 
@@ -299,14 +263,12 @@ module LeoFSManager
     def sender(command)
       begin
         @socket.puts command
-        hash = JSON.parse(@socket.gets, symbolize_names: true)
+        response = JSON.parse(@socket.gets, symbolize_names: true)
       rescue => ex
-        warn "An Error occured: #{ex.class} (server: #{@current_server})"
-        warn ex.message
-        handle_exception
-        retry
+        raise "An Error occured: #{ex.class} (server: #{@current_server})\n#{ex.message}"
       end
-      return hash
+      raise response[:error] if response.has_key?(:error)
+      return response
     end
   end
 end
