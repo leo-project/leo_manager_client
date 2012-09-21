@@ -79,48 +79,32 @@ class LeoFSManager
   ## @return version
   def version
     h = sender(CMD_VERSION)
-    return  h[:result]
+    return h[:result]
   end
 
   ## @doc Retrieve LeoFS's system status from LeoFS Manager
   ## @return
-  def status(*args)
-    node =
-      if args == [] then "" else args[0] end
+  def status(node=nil)
+    h1 = sender(CMD_STATUS % node)
 
-    h1 = sender(sprintf(CMD_STATUS, node))
-
-    if h1[:error] == nil && h1[:system_info] != nil
+    raise h1[:error] if h1.has_key?(:error)
+    if h1.has_key?(:system_info)
       system_info = SystemInfo.new(h1[:system_info])
-
-      node_list = []
-      h1[:node_list].each do |h2|
-        node_list << NodeInfo.new(h2)
-      end
+      node_list = h1[:node_list].map {|h2| NodeInfo.new(h2) }
       return {:system_info => system_info, :node_list => node_list}
-
-    elsif h1[:error] == nil && h1[:node_stat] != nil
+    elsif h1.has_key?(:node_stat)
       node_stat = NodeStat.new(h1[:node_stat])
       return node_stat
-    else
-      cause = h1[:error]
-      raise cause
     end
   end
-
 
   ## @doc Launch LeoFS's storage cluster
   ## @return null
   def start
     h = sender(CMD_START)
-    unless h[:error] == nil
-      cause = h[:error]
-      raise cause
-    else
-      nil
-    end
+    raise h[:error] if h.has_key?([:error])
+    nil
   end
-
 
   ## ======================================================================
   ## CLASS
@@ -258,5 +242,4 @@ if __FILE__ == $PROGRAM_NAME
   p m.version
   p m.status
   p m.status("storage_0@127.0.0.1")
-
 end
