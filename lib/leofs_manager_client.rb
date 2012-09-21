@@ -22,6 +22,8 @@
 require "socket"
 require "json"
 
+require_relative "leofs_manager_client/class_def"
+
 module LeoFSManager
   VERSION = "0.2.0"
 
@@ -103,47 +105,56 @@ module LeoFSManager
     end
   
     def detach(node)
-      sender(CMD_DETACH % node)[:result]
+      sender(CMD_DETACH % node)
+      nil
     end
   
     def resume(node)
-      sender(CMD_RESUME % node)[:result]
+      sender(CMD_RESUME % node)
+      nil
     end
   
     def rebalance
-      sender(CMD_REBALANCE)[:result]
+      sender(CMD_REBALANCE)
+      nil
     end
   
     def whereis(path)
-      sender(CMD_WHEREIS % path)[:result]
+      buckets = sender(CMD_WHEREIS % path)[:buckets]
+      buckets.map {|bucket| WhereInfo.new(bucket) }
     end
   
     def du(node)
-      sender(CMD_DU % node)[:result]
+      DiskUsage.new(sender(CMD_DU % node))
     end
   
     def compact(node)
-      sender(CMD_COMPACT % node)[:result]
+      sender(CMD_COMPACT % node)
+      nil
     end
   
     def purge(path)
-      sender(CMD_PURGE % path)[:result]
+      sender(CMD_PURGE % path)
+      nil
     end
   
     def s3_gen_key(user_id)
-      sender(CMD_S3_GEN_KEY % user_id)[:result]
+      Credential.new(sender(CMD_S3_GEN_KEY % user_id))
     end
   
     def s3_set_endpoint(endpoint)
-      sender(CMD_S3_SET_ENDPOINT % endpoint)[:result]
+      sender(CMD_S3_SET_ENDPOINT % endpoint)
+      nil
     end
   
     def s3_del_endpoint(endpoint)
-      sender(CMD_S3_DEL_ENDPOINT % endpoint)[:result]
+      sender(CMD_S3_DEL_ENDPOINT % endpoint)
+      nil
     end
   
     def s3_get_endpoints
-      sender(CMD_S3_GET_ENDPOINTS)[:result]
+      endpoints = sender(CMD_S3_GET_ENDPOINTS)[:endpoints]
+      endpoints.each {|endpoint| Endpoint.new(endpoint) }
     end
   
     def s3_add_bucket(bucket, access_key_id)
@@ -151,7 +162,8 @@ module LeoFSManager
     end
   
     def s3_get_buckets
-      sender(CMD_S3_GET_BUCKETS)[:result]
+      sender(CMD_S3_GET_BUCKETS)
+      nil
     end
 
     ## ======================================================================

@@ -52,4 +52,45 @@ module LeoFSManager
     attr_reader :version, :log_dir, :ring_cur, :ring_prev, :tota_mem_usage,
                 :system_mem_usage,  :procs_mem_usage, :ets_mem_usage, :num_of_procs
   end
+
+  class WhereInfo
+    def initialize(h)
+      @node = h[:node]
+      @vnode_id = h[:vnode_id]
+      @size = h[:size]
+      @clock = h[:clock]
+      @checksum = h[:checksum]
+      @timestamp = h[:timestamp]
+      @delete = h[:delete]
+    end
+ 
+    attr_reader :node, :vnode_id, :size, :clock, :checksum, :timestamp, :delete 
+  end
+
+  class DiskUsage
+    def initialize(h)
+      @file_size = h[:file_size]
+      @total_of_objects = h[:total_of_objects] 
+    end
+
+    attr_reader :file_size, :total_of_objects
+  end
+
+  class Credential
+    def initialize(h)
+      @access_key_id = h[:access_key_id] 
+      @secret_access_key = h[:secret_access_key]
+    end
+
+    attr_reader :access_key_id, :secret_access_key
+  end
+
+  class Endpoint
+    def initialize(h)
+      @endpoint = h[:endpoint]
+      @created_at = h[:created_at]
+    end
+
+    attr_reader :endpoint, :created_at
+  end
 end

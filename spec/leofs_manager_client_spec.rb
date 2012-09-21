@@ -19,6 +19,7 @@
 #  under the License.
 # 
 # ======================================================================
+
 require "socket"
 require "json"
 require_relative "../lib/leofs_manager_client"
