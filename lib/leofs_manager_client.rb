@@ -99,7 +99,7 @@ module LeoFSManager
   end
 
   ## @doc
-  ##
+  ## 
   class Remover
     def initialize(data)
       @data = data
@@ -167,7 +167,7 @@ module LeoFSManager
         return node_stat
       end
     end
-  
+
     ## @doc Launch LeoFS's storage cluster
     ## @return null
     def start
@@ -189,7 +189,7 @@ module LeoFSManager
     end
   
     def rebalance
-      h = sender(CMD_REBALANCE % node)
+      h = sender(CMD_REBALANCE)
       raise h[:error] if h.has_key?(:error)
       h[:result]
     end
@@ -236,14 +236,14 @@ module LeoFSManager
       h[:result]
     end
   
-    def s3_get_endpoints(endpoint)
-      h = sender(CMD_S3_GET_ENDPOINTS % endpoint)
+    def s3_get_endpoints
+      h = sender(CMD_S3_GET_ENDPOINTS)
       raise h[:error] if h.has_key?(:error)
       h[:result]
     end
   
-    def s3_add_endpoint(bucket, access_key_id)
-      h = sender(CMD_S3_ADD_ENDPOINT % [endpoint, access_key_id])
+    def s3_add_bucket(bucket, access_key_id)
+      h = sender(CMD_S3_ADD_BUCKET % [bucket, access_key_id])
       raise h[:error] if h.has_key?(:error)
       h[:result]
     end

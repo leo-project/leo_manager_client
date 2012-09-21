@@ -55,6 +55,8 @@ module Dummy
         :when=>"2012-09-21 15:08:25 +0900"}]
   }.to_json
 
+  Argument = "hoge" # passed to command which requires some arguments.
+
   # dummy Manager
   class Manager
     Thread.new do
@@ -77,19 +79,39 @@ module Dummy
   end
 end
 
+# commands which returns result as text simply.
+# key: command, value: number of required arguments
+SimpleCommands = {
+  "detach" => 1,
+  "resume" => 1,
+  "rebalance" => 0,
+  "whereis" => 1,
+  "du" => 1,
+  "compact" => 1,
+  "purge" => 1,
+  "s3_gen_key" => 1,
+  "s3_set_endpoint" => 1,
+  "s3_del_endpoint" => 1,
+  "s3_get_endpoints" => 0,
+  "s3_add_bucket" => 2,
+  "s3_get_buckets" => 0
+}
+
+include LeoFSManager
+
 describe LeoFSManager do
   before(:all) do
     Dummy::Manager.new
-    @manager = LeoFSManager::Client.new("#{Host}:#{Port}")
+    @manager = Client.new("#{Host}:#{Port}")
   end
 
   it "has version" do
-    defined?(LeoFSManager::VERSION).should eql "constant"
-    LeoFSManager::VERSION.should eql "0.2.0"
+    defined?(VERSION).should eql "constant"
+    VERSION.should eql "0.2.0"
   end
 
   it "raises error when it is passed invalid params" do
-    lambda { LeoFSManager.new }.should raise_error
+    lambda { Client.new }.should raise_error
   end
 
   describe "#status" do
@@ -98,7 +120,30 @@ describe LeoFSManager do
     end
 
     it "returns SystemInfo" do
-      @manager.status[:system_info].should be_a LeoFSManager::SystemInfo
+      @manager.status[:system_info].should be_a SystemInfo
+    end
+
+    it "returns node list" do
+      node_list = @manager.status[:node_list]
+      node_list.should be_a Array
+      node_list.each do |node|
+        node.should be_a NodeInfo
+      end
+    end
+  end
+
+  describe "#start" do
+    it "returns nil" do
+      @manager.start.should be_nil
+    end
+  end
+
+  SimpleCommands.each do |name, args_num|
+    describe "##{name}" do
+      it "returns result" do
+        args = [Dummy::Argument] * args_num
+        @manager.send(name, *args)
+      end
     end
   end
 end
