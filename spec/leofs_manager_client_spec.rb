@@ -29,14 +29,49 @@ Port = 50000
 $DEBUG = false
 Thread.abort_on_exception = true
 
-# dummy TCP server
-Thread.new do
-  TCPServer.open(Host, Port) do |server|
-    loop do
-      socket = server.accept
-      while line = socket.gets
-        json = { :result => line }.to_json
-        socket.puts(json)
+module Dummy
+  Status = {
+    :system_info =>
+    { :version=>"0.10.1",
+      :n=>"1",
+      :r=>"1",
+      :w=>"1",
+      :d=>"1",
+      :ring_size=>"128",
+      :ring_hash_cur=>"2688134336",
+      :ring_hash_prev=>"2688134336"},
+     :node_list=>
+      [{:type=>"S",
+        :node=>"storage_0@127.0.0.1",
+        :state=>"running",
+        :ring_cur=>"a039acc0",
+        :ring_prev=>"a039acc0",
+        :when=>"2012-09-21 15:08:22 +0900"},
+       {:type=>"G",
+        :node=>"gateway_0@127.0.0.1",
+        :state=>"running",
+        :ring_cur=>"a039acc0",
+        :ring_prev=>"a039acc0",
+        :when=>"2012-09-21 15:08:25 +0900"}]
+  }.to_json
+
+  # dummy Manager
+  class Manager
+    Thread.new do
+      TCPServer.open(Host, Port) do |server|
+        loop do
+          socket = server.accept
+          while line = socket.gets
+            line.chomp!
+            case line
+            when "status"
+              result = Status
+            else
+              result = { :result => line }.to_json
+            end
+            socket.puts(result)
+          end
+        end
       end
     end
   end
@@ -44,7 +79,8 @@ end
 
 describe LeoFSManager do
   before(:all) do
-    @manager = LeoFSManager.new("#{Host}:#{Port}")
+    Dummy::Manager.new
+    @manager = LeoFSManager::Client.new("#{Host}:#{Port}")
   end
 
   it "has version" do
@@ -56,16 +92,13 @@ describe LeoFSManager do
     lambda { LeoFSManager.new }.should raise_error
   end
 
-  it "returns status" do
-    p @manager.status
-  end
+  describe "#status" do
+    it "returns Hash" do
+      @manager.status.should be_a Hash
+    end
 
-  it "fails to execute command which doesn't exist" do
-    lambda { manager.hogefuga }.should raise_error
-  end
-
-  it "accepts args" do
-    json = @manager.send(:s3_gen_key, "user_id")
-    json[:result].should eql "s3_gen_key user_id\n"
+    it "returns SystemInfo" do
+      @manager.status[:system_info].should be_a LeoFSManager::SystemInfo
+    end
   end
 end

@@ -22,7 +22,7 @@
 require "socket"
 require "json"
 
-class LeoFSManager
+module LeoFSManager
   VERSION = "0.2.0"
 
   ## LeoFS-related commands:
@@ -43,145 +43,6 @@ class LeoFSManager
   CMD_S3_GET_ENDPOINTS = "s3-get-endpoints"
   CMD_S3_ADD_BUCKET    = "s3-add-bucket %s %s"
   CMD_S3_GET_BUCKETS   = "s3-get-buckets"
-
-  attr_reader :servers, :current_server
-
-  ## ======================================================================
-  ## APIs
-  ## ======================================================================
-  ## @doc
-  ##
-  def initialize(*servers)
-    servers.map! do |server|
-      if server.is_a? String
-        m = server.match(/(?<host>.+):(?<port>[0-9]{1,5})/)
-        host = m[:host]
-        port = Integer(m[:port])
-
-        raise Error, "Invalid Port Number: #{port}" unless 0 <= port && port <= 65535
-        { :host => host, :port => port, :retry_count => 0 }
-      else
-        server
-      end
-    end
-
-    @data = []
-    final = Remover.new(@data)
-    ObjectSpace.define_finalizer(self, final)
-
-    @servers = servers
-    res = set_current_server
-    connect
-  end
-
-  ## @doc Retrieve LeoFS's version from LeoFS Manager
-  ## @return version
-  def version
-    h = sender(CMD_VERSION)
-    return h[:result]
-  end
-
-  ## @doc Retrieve LeoFS's system status from LeoFS Manager
-  ## @return
-  def status(node=nil)
-    h1 = sender(CMD_STATUS % node)
-
-    raise h1[:error] if h1.has_key?(:error)
-    if h1.has_key?(:system_info)
-      system_info = SystemInfo.new(h1[:system_info])
-      node_list = h1[:node_list].map {|h2| NodeInfo.new(h2) }
-      return {:system_info => system_info, :node_list => node_list}
-    elsif h1.has_key?(:node_stat)
-      node_stat = NodeStat.new(h1[:node_stat])
-      return node_stat
-    end
-  end
-
-  ## @doc Launch LeoFS's storage cluster
-  ## @return null
-  def start
-    h = sender(CMD_START)
-    raise h[:error] if h.has_key?(:error)
-    nil
-  end
-
-  def detach(node)
-    h = sender(CMD_DETACH % node)
-    raise h[:error] if h.has_key?(:error)
-    h[:result]
-  end
-
-  def resume(node)
-    h = sender(CMD_RESUME % node)
-    raise h[:error] if h.has_key?(:error)
-    h[:result]
-  end
-
-  def rebalance
-    h = sender(CMD_REBALANCE % node)
-    raise h[:error] if h.has_key?(:error)
-    h[:result]
-  end
-
-  def whereis(path)
-    h = sender(CMD_WHEREIS % path)
-    raise h[:error] if h.has_key?(:error)
-    h[:result]
-  end
-
-  def du(node)
-    h = sender(CMD_DU % node)
-    raise h[:error] if h.has_key?(:error)
-    h[:result]
-  end
-
-  def compact(node)
-    h = sender(CMD_COMPACT % node)
-    raise h[:error] if h.has_key?(:error)
-    h[:result]
-  end
-
-  def purge(path)
-    h = sender(CMD_PURGE % path)
-    raise h[:error] if h.has_key?(:error)
-    h[:result]
-  end
-
-  def s3_gen_key(user_id)
-    h = sender(CMD_S3_GEN_KEY % user_id)
-    raise h[:error] if h.has_key?(:error)
-    h[:result]
-  end
-
-  def s3_set_endpoint(endpoint)
-    h = sender(CMD_S3_SET_ENDPOINT % endpoint)
-    raise h[:error] if h.has_key?(:error)
-    h[:result]
-  end
-
-  def s3_del_endpoint(endpoint)
-    h = sender(CMD_S3_DEL_ENDPOINT % endpoint)
-    raise h[:error] if h.has_key?(:error)
-    h[:result]
-  end
-
-  def s3_get_endpoints(endpoint)
-    h = sender(CMD_S3_GET_ENDPOINTS % endpoint)
-    raise h[:error] if h.has_key?(:error)
-    h[:result]
-  end
-
-  def s3_add_endpoint(bucket, access_key_id)
-    h = sender(CMD_S3_ADD_ENDPOINT % [endpoint, access_key_id])
-    raise h[:error] if h.has_key?(:error)
-    h[:result]
-  end
-
-  def s3_get_buckets
-    h = sender(CMD_S3_GET_BUCKETS)
-    raise h[:error] if h.has_key?(:error)
-    h[:result]
-  end
 
   ## ======================================================================
   ## CLASS
@@ -251,59 +112,202 @@ class LeoFSManager
     end
   end
 
-  ## ======================================================================
-  ## PRIVATE
-  ## ======================================================================
-  private
-
-  ## @doc
-  ##
-  def set_current_server
-    raise Error, "No servers to connect" if @servers.empty?
-    @current_server = @servers.first
-  end
-
-  ## @doc Connect to LeoFS Manager
-  ##
-  def connect
-    begin
-      @socket = TCPSocket.new(@current_server[:host], @current_server[:port])
-      @data[0] = @socket
-    rescue => ex
-      warn "Faild to connect: #{ex.class} (server: #{@current_server})"
-      warn ex.message
-      handle_exception
-      retry
+  class Client
+    ## ======================================================================
+    ## APIs
+    ## ======================================================================
+    ## @doc
+    ##
+    def initialize(*servers)
+      servers.map! do |server|
+        if server.is_a? String
+          m = server.match(/(?<host>.+):(?<port>[0-9]{1,5})/)
+          host = m[:host]
+          port = Integer(m[:port])
+  
+          raise Error, "Invalid Port Number: #{port}" unless 0 <= port && port <= 65535
+          { :host => host, :port => port, :retry_count => 0 }
+        else
+          server
+        end
+      end
+  
+      @data = []
+      final = Remover.new(@data)
+      ObjectSpace.define_finalizer(self, final)
+  
+      @servers = servers
+      res = set_current_server
+      connect
     end
-  end
 
-  ## @doc Handle exceptions
-  ##
-  def handle_exception
-    @current_server[:retry_count] += 1
-    if @current_server[:retry_count] < 3
-      warn "Retrying..."
-    else
-      warn "Connecting another server..."
-      @socket.close if @socket && !@socket.closed?
-      @servers.delete(@current_server)
-      set_current_server
+    attr_reader :servers, :current_server
+  
+    ## @doc Retrieve LeoFS's version from LeoFS Manager
+    ## @return version
+    def version
+      h = sender(CMD_VERSION)
+      return h[:result]
     end
-  end
+  
+    ## @doc Retrieve LeoFS's system status from LeoFS Manager
+    ## @return
+    def status(node=nil)
+      command = CMD_STATUS % node
+      command.rstrip!
+      h1 = sender(command)
+  
+      raise h1[:error] if h1.has_key?(:error)
+      if h1.has_key?(:system_info)
+        system_info = SystemInfo.new(h1[:system_info])
+        node_list = h1[:node_list].map {|h2| NodeInfo.new(h2) }
+        return {:system_info => system_info, :node_list => node_list}
+      elsif h1.has_key?(:node_stat)
+        node_stat = NodeStat.new(h1[:node_stat])
+        return node_stat
+      end
+    end
+  
+    ## @doc Launch LeoFS's storage cluster
+    ## @return null
+    def start
+      h = sender(CMD_START)
+      raise h[:error] if h.has_key?(:error)
+      nil
+    end
+  
+    def detach(node)
+      h = sender(CMD_DETACH % node)
+      raise h[:error] if h.has_key?(:error)
+      h[:result]
+    end
+  
+    def resume(node)
+      h = sender(CMD_RESUME % node)
+      raise h[:error] if h.has_key?(:error)
+      h[:result]
+    end
+  
+    def rebalance
+      h = sender(CMD_REBALANCE % node)
+      raise h[:error] if h.has_key?(:error)
+      h[:result]
+    end
+  
+    def whereis(path)
+      h = sender(CMD_WHEREIS % path)
+      raise h[:error] if h.has_key?(:error)
+      h[:result]
+    end
+  
+    def du(node)
+      h = sender(CMD_DU % node)
+      raise h[:error] if h.has_key?(:error)
+      h[:result]
+    end
+  
+    def compact(node)
+      h = sender(CMD_COMPACT % node)
+      raise h[:error] if h.has_key?(:error)
+      h[:result]
+    end
+  
+    def purge(path)
+      h = sender(CMD_PURGE % path)
+      raise h[:error] if h.has_key?(:error)
+      h[:result]
+    end
+  
+    def s3_gen_key(user_id)
+      h = sender(CMD_S3_GEN_KEY % user_id)
+      raise h[:error] if h.has_key?(:error)
+      h[:result]
+    end
+  
+    def s3_set_endpoint(endpoint)
+      h = sender(CMD_S3_SET_ENDPOINT % endpoint)
+      raise h[:error] if h.has_key?(:error)
+      h[:result]
+    end
+  
+    def s3_del_endpoint(endpoint)
+      h = sender(CMD_S3_DEL_ENDPOINT % endpoint)
+      raise h[:error] if h.has_key?(:error)
+      h[:result]
+    end
+  
+    def s3_get_endpoints(endpoint)
+      h = sender(CMD_S3_GET_ENDPOINTS % endpoint)
+      raise h[:error] if h.has_key?(:error)
+      h[:result]
+    end
+  
+    def s3_add_endpoint(bucket, access_key_id)
+      h = sender(CMD_S3_ADD_ENDPOINT % [endpoint, access_key_id])
+      raise h[:error] if h.has_key?(:error)
+      h[:result]
+    end
+  
+    def s3_get_buckets
+      h = sender(CMD_S3_GET_BUCKETS)
+      raise h[:error] if h.has_key?(:error)
+      h[:result]
+    end
 
-  ## @doc Send a request to LeoFS Manager
-  ## @return Hash
-  def sender(command)
-    begin
-      @socket.puts command
-      hash = JSON.parse(@socket.gets, symbolize_names: true)
-    rescue => ex
-      warn "An Error occured: #{ex.class} (server: #{@current_server})"
-      warn ex.message
-      handle_exception
-      retry
+    ## ======================================================================
+    ## PRIVATE
+    ## ======================================================================
+    private
+
+    ## @doc
+    ##
+    def set_current_server
+      raise Error, "No servers to connect" if @servers.empty?
+      @current_server = @servers.first
     end
-    return hash
+
+    ## @doc Connect to LeoFS Manager
+    ##
+    def connect
+      begin
+        @socket = TCPSocket.new(@current_server[:host], @current_server[:port])
+        @data[0] = @socket
+      rescue => ex
+        warn "Faild to connect: #{ex.class} (server: #{@current_server})"
+        warn ex.message
+        handle_exception
+        retry
+      end
+    end
+
+    ## @doc Handle exceptions
+    ##
+    def handle_exception
+      @current_server[:retry_count] += 1
+      if @current_server[:retry_count] < 3
+        warn "Retrying..."
+      else
+        warn "Connecting another server..."
+        @socket.close if @socket && !@socket.closed?
+        @servers.delete(@current_server)
+        set_current_server
+      end
+    end
+
+    ## @doc Send a request to LeoFS Manager
+    ## @return Hash
+    def sender(command)
+      begin
+        @socket.puts command
+        hash = JSON.parse(@socket.gets, symbolize_names: true)
+      rescue => ex
+        warn "An Error occured: #{ex.class} (server: #{@current_server})"
+        warn ex.message
+        handle_exception
+        retry
+      end
+      return hash
+    end
   end
 end
 
