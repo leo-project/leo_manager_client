@@ -147,7 +147,7 @@ module LeoFSManager
   
     def s3_get_endpoints
       endpoints = sender(CMD_S3_GET_ENDPOINTS)[:endpoints]
-      endpoints.each {|endpoint| Endpoint.new(endpoint) }
+      endpoints.map {|endpoint| Endpoint.new(endpoint) }
     end
   
     def s3_add_bucket(bucket_name, access_key_id)
