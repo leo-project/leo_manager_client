@@ -113,6 +113,7 @@ module Dummy
   end
 end
 
+# key: api_name, value: num of args
 NoResultAPIs = {
   :start => 0, 
   :detach => 1, 
@@ -161,12 +162,28 @@ describe LeoFSManager do
 
   describe "#whereis" do
     it "returns Array of WhereInfo" do
-      result = @manager.whereis("hoge")
+      result = @manager.whereis("path")
       result.should be_a Array
       result.each do |where_info|
         where_info.should be_a WhereInfo
       end
     end    
+  end
+
+  describe "#du" do
+    it "returns DiskUsage" do
+      @manager.du("node").should be_a DiskUsage
+    end
+  end
+
+  describe "#s3_gen_key" do
+    it "returns Credential" do
+      @manager.s3_gen_key("user_id").should be_a Credential
+    end 
+  end
+
+  describe "#s3_get_endpoints" do
+    it "returns 
   end
 
   NoResultAPIs.each do |api, num_of_args|
