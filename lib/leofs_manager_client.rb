@@ -26,7 +26,7 @@ require "time"
 require_relative "leofs_manager_client/leofs_manager_models"
 
 module LeoFSManager
-  VERSION = "0.2.0"
+  VERSION = "0.2.1"
 
   class Remover
     def initialize(data)
