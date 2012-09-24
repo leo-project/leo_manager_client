@@ -31,30 +31,54 @@ $DEBUG = false
 Thread.abort_on_exception = true
 
 module Dummy
-  Status = {
-    :system_info =>
-    { :version=>"0.10.1",
-      :n=>"1",
-      :r=>"1",
-      :w=>"1",
-      :d=>"1",
-      :ring_size=>"128",
-      :ring_hash_cur=>"2688134336",
-      :ring_hash_prev=>"2688134336"},
-     :node_list=>
-      [{:type=>"S",
-        :node=>"storage_0@127.0.0.1",
-        :state=>"running",
-        :ring_cur=>"a039acc0",
-        :ring_prev=>"a039acc0",
-        :when=>"2012-09-21 15:08:22 +0900"},
-       {:type=>"G",
-        :node=>"gateway_0@127.0.0.1",
-        :state=>"running",
-        :ring_cur=>"a039acc0",
-        :ring_prev=>"a039acc0",
-        :when=>"2012-09-21 15:08:25 +0900"}]
-  }.to_json
+  module Response
+    Status = {
+      :system_info =>
+      { :version =>"0.10.1",
+        :n =>"1",
+        :r =>"1",
+        :w =>"1",
+        :d =>"1",
+        :ring_size =>"128",
+        :ring_hash_cur =>"2688134336",
+        :ring_hash_prev =>"2688134336"},
+       :node_list =>
+        [{:type =>"S",
+          :node =>"storage_0@127.0.0.1",
+          :state =>"running",
+          :ring_cur =>"a039acc0",
+          :ring_prev =>"a039acc0",
+          :when =>"2012-09-21 15:08:22 +0900"},
+         {:type =>"G",
+          :node =>"gateway_0@127.0.0.1",
+          :state =>"running",
+          :ring_cur =>"a039acc0",
+          :ring_prev =>"a039acc0",
+          :when =>"2012-09-21 15:08:25 +0900"}]
+    }.to_json
+
+    Whereis = {
+      :buckets =>[
+        { 
+          :node =>"storage_0@127.0.0.1",
+          :vnode_id =>"",
+          :size =>"",
+          :clock =>"",
+          :checksum =>"",
+          :timestamp =>"",
+          :delete =>0
+        }
+      ]
+    }.to_json
+
+    S3GetBuckets = {
+      :buckets => {
+        :bucket => "test",
+        :owner => "test",
+        :created_at => "2012-09-24 15:38:49 +0900"
+      }
+    }.to_json
+  end
 
   Argument = "hoge" # passed to command which requires some arguments.
 
@@ -64,12 +88,16 @@ module Dummy
       TCPServer.open(Host, Port) do |server|
         loop do
           socket = server.accept
-          while line = socket.gets
+          while line = socket.gets.split.first
             line.rstrip!
             begin
               case line
               when "status"
-                result = Status
+                result = Response::Status
+              when "s3-get-buckets"
+                result = Response::S3GetBuckets
+              when "whereis"
+                result = Response::Whereis
               else
                 result = { :result => line }.to_json
               end
@@ -86,8 +114,14 @@ module Dummy
 end
 
 NoResultAPIs = {
-  :start, :detach, :rebalance, :compact, :purge,
-  :s3_set_endpoint, :s3_del_endpoint
+  :start => 0, 
+  :detach => 1, 
+  :rebalance => 0, 
+  :compact => 1, 
+  :purge => 1,
+  :s3_set_endpoint => 1, 
+  :s3_del_endpoint => 1, 
+  :s3_add_bucket => 2
 }
 
 include LeoFSManager
@@ -125,12 +159,21 @@ describe LeoFSManager do
     end
   end
 
-  describe "#start" do
-    it "returns nil" do
-      @manager.start.should be_nil
-    end
+  describe "#whereis" do
+    it "returns Array of WhereInfo" do
+      result = @manager.whereis("hoge")
+      result.should be_a Array
+      result.each do |where_info|
+        where_info.should be_a WhereInfo
+      end
+    end    
   end
 
-  describe "#detach" do
+  NoResultAPIs.each do |api, num_of_args|
+    describe "##{api}" do
+      it "returns nil" do
+        @manager.send(api, *(["argument"] * num_of_args)).should be_nil
+      end
+    end
   end
 end

@@ -21,6 +21,7 @@
 # ======================================================================
 require "socket"
 require "json"
+require "time"
 
 require_relative "leofs_manager_client/response_def"
 
@@ -151,11 +152,12 @@ module LeoFSManager
   
     def s3_add_bucket(bucket_name, access_key_id)
       sender(CMD_S3_ADD_BUCKET % [bucket_name, access_key_id])
+      nil
     end
   
     def s3_get_buckets
-      sender(CMD_S3_GET_BUCKETS)
-      nil #XXX: it should return result
+      buckets = sender(CMD_S3_GET_BUCKETS)
+      buckets.map {|bucket| Bucket.new(bucket) }
     end
 
     ## ======================================================================

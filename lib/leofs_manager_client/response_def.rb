@@ -103,4 +103,12 @@ module LeoFSManager
 
     attr_reader :endpoint, :created_at
   end
+
+  class Bucket
+    def initialize(h)
+      @name = h[:bucket]
+      @owner = h[:owner]
+      @created_at = Time.parse(h[:created_at])
+    end
+  end
 end
