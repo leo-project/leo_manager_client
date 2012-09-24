@@ -154,7 +154,7 @@ describe LeoFSManager do
 
   it "has version" do
     defined?(VERSION).should eql "constant"
-    VERSION.should eql "0.2.0"
+    VERSION.should eql "0.2.1"
   end
 
   it "raises error when it is passed invalid params" do

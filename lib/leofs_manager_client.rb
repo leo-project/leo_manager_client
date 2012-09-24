@@ -126,14 +126,14 @@ module LeoFSManager
     ## @doc Retrieve assigned file information
     ##
     def whereis(path)
-      assigned_info = sender(CMD_WHEREIS % path)[:assigned_info]
-      assigned_info.map {|h| AssignedFile.new(h)}
+      whereis = sender(CMD_WHEREIS % path)[:buckets]
+      whereis.map {|h| WhereInfo.new(h)}
     end
 
     ## @doc Retrieve storage status from the storage
     ##
     def du(node)
-      StorageStat.new(sender(CMD_DU % node))
+      DiskUsage.new(sender(CMD_DU % node))
     end
 
     ## @doc Execute 'compaction'
