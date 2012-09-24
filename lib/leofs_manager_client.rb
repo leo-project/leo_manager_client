@@ -149,13 +149,13 @@ module LeoFSManager
       endpoints.each {|endpoint| Endpoint.new(endpoint) }
     end
   
-    def s3_add_bucket(bucket, access_key_id)
-      sender(CMD_S3_ADD_BUCKET % [bucket, access_key_id])[:result]
+    def s3_add_bucket(bucket_name, access_key_id)
+      sender(CMD_S3_ADD_BUCKET % [bucket_name, access_key_id])
     end
   
     def s3_get_buckets
       sender(CMD_S3_GET_BUCKETS)
-      nil
+      nil #XXX: it should return result
     end
 
     ## ======================================================================

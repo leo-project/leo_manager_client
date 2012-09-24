@@ -85,6 +85,11 @@ module Dummy
   end
 end
 
+NoResultAPIs = {
+  :start, :detach, :rebalance, :compact, :purge,
+  :s3_set_endpoint, :s3_del_endpoint
+}
+
 include LeoFSManager
 
 describe LeoFSManager do
@@ -124,5 +129,8 @@ describe LeoFSManager do
     it "returns nil" do
       @manager.start.should be_nil
     end
+  end
+
+  describe "#detach" do
   end
 end
