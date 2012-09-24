@@ -66,37 +66,24 @@ module Dummy
           socket = server.accept
           while line = socket.gets
             line.rstrip!
-            case line
-            when "status"
-              result = Status
-            else
-              result = { :result => line }.to_json
+            begin
+              case line
+              when "status"
+                result = Status
+              else
+                result = { :result => line }.to_json
+              end
+            rescue => ex
+              result = { :error => ex.message }.to_json
+            ensure
+              socket.puts(result)
             end
-            socket.puts(result)
           end
         end
       end
     end
   end
 end
-
-# commands which returns result as text simply.
-# key: command, value: number of required arguments
-SimpleCommands = {
-  "detach" => 1,
-  "resume" => 1,
-  "rebalance" => 0,
-  "whereis" => 1,
-  "du" => 1,
-  "compact" => 1,
-  "purge" => 1,
-  "s3_gen_key" => 1,
-  "s3_set_endpoint" => 1,
-  "s3_del_endpoint" => 1,
-  "s3_get_endpoints" => 0,
-  "s3_add_bucket" => 2,
-  "s3_get_buckets" => 0
-}
 
 include LeoFSManager
 
@@ -116,19 +103,19 @@ describe LeoFSManager do
   end
 
   describe "#status" do
-    it "returns Hash" do
+    it "returns Status" do
       @manager.status.should be_a Status
     end
 
     it "returns SystemInfo" do
-      @manager.status[:system_info].should be_a SystemInfo
+      @manager.status.system_info.should be_a Status::SystemInfo
     end
 
     it "returns node list" do
-      node_list = @manager.status[:node_list]
+      node_list = @manager.status.node_list
       node_list.should be_a Array
       node_list.each do |node|
-        node.should be_a NodeInfo
+        node.should be_a Status::NodeInfo
       end
     end
   end
@@ -136,15 +123,6 @@ describe LeoFSManager do
   describe "#start" do
     it "returns nil" do
       @manager.start.should be_nil
-    end
-  end
-
-  SimpleCommands.each do |name, args_num|
-    describe "##{name}" do
-      it "returns result" do
-        args = [Dummy::Argument] * args_num
-        @manager.send(name, *args)
-      end
     end
   end
 end
