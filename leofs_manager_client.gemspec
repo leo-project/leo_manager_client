@@ -7,7 +7,7 @@ Gem::Specification.new do |gem|
   gem.name          = "leofs_manager_client"
   gem.version       = LeoFSManager::VERSION
   gem.authors       = ["Masaki Matsushita", "Yosuke Hara"]
-  gem.email         = ["mail@leofs.org"]
+  gem.email         = ["leofaststorage@gmail.com"]
   gem.description   = %q{Client for LeoFS Manager}
   gem.summary       = %q{Client for LeoFS Manager}
   gem.homepage      = ""
