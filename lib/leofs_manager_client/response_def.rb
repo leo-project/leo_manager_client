@@ -106,6 +106,7 @@ module LeoFSManager
 
   class Bucket
     def initialize(h)
+      p h
       @name = h[:bucket]
       @owner = h[:owner]
       @created_at = Time.parse(h[:created_at])

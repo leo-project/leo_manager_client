@@ -156,7 +156,7 @@ module LeoFSManager
     end
   
     def s3_get_buckets
-      buckets = sender(CMD_S3_GET_BUCKETS)
+      buckets = sender(CMD_S3_GET_BUCKETS)[:buckets]
       buckets.map {|bucket| Bucket.new(bucket) }
     end
 

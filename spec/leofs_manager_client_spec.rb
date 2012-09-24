@@ -33,50 +33,65 @@ Thread.abort_on_exception = true
 module Dummy
   module Response
     Status = {
-      :system_info =>
-      { :version =>"0.10.1",
-        :n =>"1",
-        :r =>"1",
-        :w =>"1",
-        :d =>"1",
-        :ring_size =>"128",
-        :ring_hash_cur =>"2688134336",
-        :ring_hash_prev =>"2688134336"},
-       :node_list =>
-        [{:type =>"S",
-          :node =>"storage_0@127.0.0.1",
-          :state =>"running",
-          :ring_cur =>"a039acc0",
-          :ring_prev =>"a039acc0",
-          :when =>"2012-09-21 15:08:22 +0900"},
-         {:type =>"G",
-          :node =>"gateway_0@127.0.0.1",
-          :state =>"running",
-          :ring_cur =>"a039acc0",
-          :ring_prev =>"a039acc0",
-          :when =>"2012-09-21 15:08:25 +0900"}]
+      :system_info => {
+        :version => "0.10.1",
+        :n => "1",
+        :r => "1",
+        :w => "1",
+        :d => "1",
+        :ring_size => "128",
+        :ring_hash_cur => "2688134336",
+        :ring_hash_prev => "2688134336"},
+        :node_list => [
+          {
+            :type => "S",
+            :node => "storage_0@127.0.0.1",
+            :state => "running",
+            :ring_cur => "a039acc0",
+            :ring_prev => "a039acc0",
+            :when => "2012-09-21 15:08:22 +0900"
+          }, {
+            :type => "G",
+            :node => "gateway_0@127.0.0.1",
+            :state => "running",
+            :ring_cur => "a039acc0",
+            :ring_prev => "a039acc0",
+            :when => "2012-09-21 15:08:25 +0900"
+          }
+        ]
     }.to_json
 
     Whereis = {
-      :buckets =>[
+      :buckets => [
         { 
-          :node =>"storage_0@127.0.0.1",
-          :vnode_id =>"",
-          :size =>"",
-          :clock =>"",
-          :checksum =>"",
-          :timestamp =>"",
-          :delete =>0
+          :node => "storage_0@127.0.0.1",
+          :vnode_id => "",
+          :size => "",
+          :clock => "",
+          :checksum => "",
+          :timestamp => "",
+          :delete => 0
         }
       ]
     }.to_json
 
+    S3GetEndpoints = {
+      :endpoints => [
+        {:endpoint => "s3.amazonaws.com", :created_at=>"2012-09-21 15:08:11 +0900"},
+        {:endpoint => "localhost", :created_at=>"2012-09-21 15:08:11 +0900"},
+        {:endpoint => "foo", :created_at=>"2012-09-21 18:51:08 +0900"},
+        {:endpoint => "leofs.org", :created_at=>"2012-09-21 15:08:11 +0900"}
+      ]
+    }.to_json
+
     S3GetBuckets = {
-      :buckets => {
-        :bucket => "test",
-        :owner => "test",
-        :created_at => "2012-09-24 15:38:49 +0900"
-      }
+      :buckets => [
+        {
+          :bucket => "test",
+          :owner => "test",
+          :created_at => "2012-09-24 15:38:49 +0900"
+        }
+      ]
     }.to_json
   end
 
@@ -98,6 +113,10 @@ module Dummy
                 result = Response::S3GetBuckets
               when "whereis"
                 result = Response::Whereis
+              when "s3-get-endpoints"
+                result = Response::S3GetEndpoints
+              when "s3-get-buckets"
+                result = Response::S3GetBuckets
               else
                 result = { :result => line }.to_json
               end
@@ -183,7 +202,23 @@ describe LeoFSManager do
   end
 
   describe "#s3_get_endpoints" do
-    it "returns 
+    it "returns Arrany of Endpoint" do
+      result = @manager.s3_get_endpoints
+      result.should be_a Array
+      result.each do |endpoint|
+        endpoint.should be_a Endpoint
+      end
+    end
+  end
+
+  describe "#s3_get_buckets" do
+    it "returns Array of Bucket" do
+      result = @manager.s3_get_buckets
+      result.should be_a Array
+      result.each do |buckets|
+        buckets.should be_a Bucket
+      end
+    end
   end
 
   NoResultAPIs.each do |api, num_of_args|
