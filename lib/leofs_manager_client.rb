@@ -26,7 +26,7 @@ require "time"
 require_relative "leofs_manager_client/leofs_manager_models"
 
 module LeoFSManager
-  VERSION = "0.2.1"
+  VERSION = "0.2.2"
 
   class Remover
     def initialize(data)
@@ -126,14 +126,14 @@ module LeoFSManager
     ## @doc Retrieve assigned file information
     ##
     def whereis(path)
-      whereis = sender(CMD_WHEREIS % path)[:buckets]
-      whereis.map {|h| WhereInfo.new(h)}
+      assigned_info = sender(CMD_WHEREIS % path)[:assigned_info]
+      assigned_info.map {|h| AssignedFile.new(h)}
     end
 
     ## @doc Retrieve storage status from the storage
     ##
     def du(node)
-      DiskUsage.new(sender(CMD_DU % node))
+      StorageStat.new(sender(CMD_DU % node))
     end
 
     ## @doc Execute 'compaction'
@@ -176,7 +176,7 @@ module LeoFSManager
       endpoints = sender(CMD_S3_GET_ENDPOINTS)[:endpoints]
       endpoints.map {|endpoint| Endpoint.new(endpoint) }
     end
-  
+
     def s3_add_bucket(bucket_name, access_key_id)
       sender(CMD_S3_ADD_BUCKET % [bucket_name, access_key_id])
       nil
