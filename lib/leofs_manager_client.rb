@@ -28,11 +28,13 @@ require_relative "leofs_manager_client/leofs_manager_models"
 module LeoFSManager
   VERSION = "0.2.3"
 
+  # Class for close TCP socket on GC.
   class Remover
     def initialize(data)
       @data = data
     end
 
+    # it will be called on GC.
     def call(*args)
       socket = @data[0]
       socket.close if socket && !socket.closed?
@@ -60,11 +62,11 @@ module LeoFSManager
     CMD_S3_ADD_BUCKET    = "s3-add-bucket %s %s"
     CMD_S3_GET_BUCKETS   = "s3-get-buckets"
 
-    ## ======================================================================
-    ## APIs
-    ## ======================================================================
-    ## @doc Constructor
-    ##
+    # ======================================================================
+    # APIs
+    # ======================================================================
+    # Constructor
+    #
     def initialize(*servers)
       @servers = parse_servers(servers)
       set_current_server
@@ -75,21 +77,24 @@ module LeoFSManager
 
     attr_reader :servers, :current_server
 
-    ## @doc Retrieve LeoFS's version from LeoFS Manager
-    ## @return version
+    # Retrieve LeoFS's version from LeoFS Manager
+    # ==== Return
+    # Version of LeoFS
     def version
       h = sender(CMD_VERSION)
       return h[:result]
     end
 
-    ## @doc Retrieve LeoFS's system status from LeoFS Manager
-    ## @return
+    # Retrieve LeoFS's system status from LeoFS Manager
+    # ==== Return
+    # Status 
     def status(node=nil)
       Status.new(sender(CMD_STATUS % node))
     end
 
-    ## @doc Launch LeoFS's storage cluster
-    ## @return nil
+    # Launch LeoFS's storage cluster
+    # ==== Return
+    # nil
     def start
       sender(CMD_START)
       nil
