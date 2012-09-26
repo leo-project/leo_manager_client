@@ -75,7 +75,10 @@ module LeoFSManager
       connect
     end
 
-    attr_reader :servers, :current_server
+    # servers to connect 
+    attr_reader :servers
+    # server currently connected
+    attr_reader :current_server
 
     # Retrieve LeoFS's version from LeoFS Manager
     # ==== Return
@@ -94,101 +97,117 @@ module LeoFSManager
 
     # Launch LeoFS's storage cluster
     # ==== Return
-    # nil
+    # _nil_
     def start
       sender(CMD_START)
       nil
     end
 
-    ## @doc Leave a node from the storage cluster
-    ##
+    # Leave a node from the storage cluster
+    # ==== Return
+    # _nil_
     def detach(node)
       sender(CMD_DETACH % node)
       nil
     end
 
-    ## @doc Suspend a node in the storage cluster
-    ##
+    # Suspend a node in the storage cluster
+    # ==== Return
+    # _nil_
     def suspend(node)
       sender(CMD_SUSPEND % node)
       nil
     end
 
-    ## @doc Resume a node in the storage cluster
-    ##
+    # Resume a node in the storage cluster
+    # ==== Return
+    # _nil_
     def resume(node)
       sender(CMD_RESUME % node)
       nil
     end
 
-    ## @doc Execute 'rebalance' in the storage cluster
-    ##
+    # Execute 'rebalance' in the storage cluster
+    # ==== Return
+    # _nil_
     def rebalance
       sender(CMD_REBALANCE)
       nil
     end
 
-    ## @doc Retrieve assigned file information
-    ##
+    # Retrieve assigned file information
+    # ==== Return
+    # Array of AssignedFile
     def whereis(path)
       assigned_info = sender(CMD_WHEREIS % path)[:assigned_info]
       assigned_info.map {|h| AssignedFile.new(h)}
     end
 
-    ## @doc Retrieve storage status from the storage
-    ##
+    # Retrieve storage status from the storage
+    # ==== Return
+    # StorageStat
     def du(node)
       StorageStat.new(sender(CMD_DU % node))
     end
 
-    ## @doc Execute 'compaction'
-    ##
+    # Execute 'compaction'
+    # ==== Return
+    # _nil_
     def compact(node)
       sender(CMD_COMPACT % node)
       nil
     end
 
-    ## @doc Purge a cache in gateways
-    ##
+    # Purge a cache in gateways
+    # ==== Return
+    # _nil_
     def purge(path)
       sender(CMD_PURGE % path)
       nil
     end
 
-    ## @doc Generate credential for LeoFS
-    ##
+    # Generate credential for LeoFS
+    # ==== Return
+    # Credential
     def s3_gen_key(user_id)
       Credential.new(sender(CMD_S3_GEN_KEY % user_id))
     end
 
-    ## @doc Insert an endpoint in the system
-    ##
+    # Insert an endpoint in the system
+    # ==== Return
+    # _nil_
     def s3_set_endpoint(endpoint)
       sender(CMD_S3_SET_ENDPOINT % endpoint)
       nil
     end
 
-    ## @doc Remove an endpoint from the system
-    ##
+    # Remove an endpoint from the system
+    # ==== Return
+    # _nil_
     def s3_del_endpoint(endpoint)
       sender(CMD_S3_DEL_ENDPOINT % endpoint)
       nil
     end
 
-    ## @doc Retrieve an endpoint in the system
-    ##
+    # Retrieve an endpoint in the system
+    # ==== Return
+    # Array of Endpoint
     def s3_get_endpoints
       endpoints = sender(CMD_S3_GET_ENDPOINTS)[:endpoints]
       endpoints.map {|endpoint| Endpoint.new(endpoint) }
     end
 
+    # Add an Bucket in the system
+    # ==== Return
+    # _nil_
     def s3_add_bucket(bucket_name, access_key_id)
       sender(CMD_S3_ADD_BUCKET % [bucket_name, access_key_id])
       nil
     end
 
-    ## @doc Retrieve all buckets from the system
-    ##
+    # Retrieve all buckets from the system
+    # ==== Return
+    # Array of Bucket
     def s3_get_buckets
       buckets = sender(CMD_S3_GET_BUCKETS)[:buckets]
       buckets.map {|bucket| Bucket.new(bucket) }
@@ -214,15 +233,12 @@ module LeoFSManager
       end
     end
 
-    ## @doc
-    ##
     def set_current_server
       raise Error, "No servers to connect" if @servers.empty?
       @current_server = @servers.first
     end
 
-    ## @doc Connect to LeoFS Manager
-    ##
+    # Connect to LeoFS Manager
     def connect
       retry_count = 0
       begin
@@ -243,8 +259,9 @@ module LeoFSManager
       end
     end
 
-    ## @doc Send a request to LeoFS Manager
-    ## @return Hash
+    # Send a request to LeoFS Manager
+    # ==== Return
+    # Hash
     def sender(command)
       begin
         @socket.puts command
@@ -258,7 +275,7 @@ module LeoFSManager
   end
 end
 
-
+# This section runs only when the file executed directly.
 if __FILE__ == $PROGRAM_NAME
   require "pp"
 
