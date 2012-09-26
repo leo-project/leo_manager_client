@@ -20,14 +20,14 @@
 #
 # ======================================================================
 module LeoFSManager
-
-  ## ======================================================================
-  ## CLASS
-  ## ======================================================================
-  ## @doc System Information Model
-  ##
+  # System Information Model
   class Status
-    attr_reader :node_stat, :system_info, :node_list
+    # Node
+    attr_reader :node_stat
+    # System
+    attr_reader :system_info
+    # Array of Node
+    attr_reader :node_list
 
     def initialize(h)
       @node_stat = Node.new(h[:node_stat]) if h.has_key?(:node_stat)
@@ -59,8 +59,7 @@ module LeoFSManager
       end
     end
 
-    ## @doc Node Status Model
-    ##
+    # Node Status Model
     class Node
       attr_reader :version, :type, :node, :state, :log_dir, :ring_cur, :ring_prev, :joined_at,
                   :tota_mem_usage, :system_mem_usage,  :procs_mem_usage, :ets_mem_usage, :num_of_procs
@@ -83,9 +82,7 @@ module LeoFSManager
     end
   end
 
-
-  ## @doc Assigned file info Model
-  ##
+  # Assigned file info Model
   class AssignedFile
     attr_reader :node, :vnode_id, :size, :clock, :checksum, :timestamp, :delete
 
@@ -100,8 +97,7 @@ module LeoFSManager
     end
   end
 
-  ## @doc Storage Status Model
-  ##
+  # Storage Status Model
   class StorageStat
     attr_reader :file_size, :total_of_objects
 
@@ -111,11 +107,12 @@ module LeoFSManager
     end
   end
 
-
-  ## @doc Credential Model
-  ##
+  # S3 Credential
   class Credential
-    attr_reader :access_key_id, :secret_access_key
+    # AWS_ACCESS_KEY_ID
+    attr_reader :access_key_id
+    # AWS_SECRET_ACCESS_KEY
+    attr_reader :secret_access_key
 
     def initialize(h)
       @access_key_id = h[:access_key_id]
@@ -123,11 +120,12 @@ module LeoFSManager
     end
   end
 
-
-  ## @doc Endpoint
-  ##
+  # Endpoint
   class Endpoint
-    attr_reader :endpoint, :created_at
+    # host of the endpoint
+    attr_reader :endpoint
+    # When the endpoint created at
+    attr_reader :created_at
 
     def initialize(h)
       @endpoint = h[:endpoint]
@@ -135,11 +133,14 @@ module LeoFSManager
     end
   end
 
-
-  ## @doc S3-Bucket Model
-  ##
+  # S3-Bucket Model
   class Bucket
-    attr_reader :name, :owner, :created_at
+    # name of bucket
+    attr_reader :name
+    # name of the bucket's owner
+    attr_reader :owner
+    # when the bucket created at
+    attr_reader :created_at
 
     def initialize(h)
       @name       = h[:bucket]

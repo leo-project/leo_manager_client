@@ -77,137 +77,137 @@ module LeoFSManager
 
     # servers to connect 
     attr_reader :servers
-    # server currently connected
+    # the server currently connected
     attr_reader :current_server
 
     # Retrieve LeoFS's version from LeoFS Manager
-    # ==== Return
-    # Version of LeoFS
+    # Return::
+    #   Version of LeoFS
     def version
       h = sender(CMD_VERSION)
       return h[:result]
     end
 
     # Retrieve LeoFS's system status from LeoFS Manager
-    # ==== Return
-    # Status 
+    # Return::
+    #   Status 
     def status(node=nil)
       Status.new(sender(CMD_STATUS % node))
     end
 
     # Launch LeoFS's storage cluster
-    # ==== Return
-    # _nil_
+    # Return::
+    #   _nil_
     def start
       sender(CMD_START)
       nil
     end
 
     # Leave a node from the storage cluster
-    # ==== Return
-    # _nil_
+    # Return::
+    #   _nil_
     def detach(node)
       sender(CMD_DETACH % node)
       nil
     end
 
     # Suspend a node in the storage cluster
-    # ==== Return
-    # _nil_
+    # Return::
+    #   _nil_
     def suspend(node)
       sender(CMD_SUSPEND % node)
       nil
     end
 
     # Resume a node in the storage cluster
-    # ==== Return
-    # _nil_
+    # Return::
+    #   _nil_
     def resume(node)
       sender(CMD_RESUME % node)
       nil
     end
 
     # Execute 'rebalance' in the storage cluster
-    # ==== Return
-    # _nil_
+    # Return::
+    #   _nil_
     def rebalance
       sender(CMD_REBALANCE)
       nil
     end
 
     # Retrieve assigned file information
-    # ==== Return
-    # Array of AssignedFile
+    # Return::
+    #   Array of AssignedFile
     def whereis(path)
       assigned_info = sender(CMD_WHEREIS % path)[:assigned_info]
       assigned_info.map {|h| AssignedFile.new(h)}
     end
 
     # Retrieve storage status from the storage
-    # ==== Return
-    # StorageStat
+    # Return::
+    #   StorageStat
     def du(node)
       StorageStat.new(sender(CMD_DU % node))
     end
 
     # Execute 'compaction'
-    # ==== Return
-    # _nil_
+    # Return::
+    #   _nil_
     def compact(node)
       sender(CMD_COMPACT % node)
       nil
     end
 
     # Purge a cache in gateways
-    # ==== Return
-    # _nil_
+    # Return::
+    #   _nil_
     def purge(path)
       sender(CMD_PURGE % path)
       nil
     end
 
     # Generate credential for LeoFS
-    # ==== Return
-    # Credential
+    # Return::
+    #   Credential
     def s3_gen_key(user_id)
       Credential.new(sender(CMD_S3_GEN_KEY % user_id))
     end
 
     # Insert an endpoint in the system
-    # ==== Return
-    # _nil_
+    # Return::
+    #   _nil_
     def s3_set_endpoint(endpoint)
       sender(CMD_S3_SET_ENDPOINT % endpoint)
       nil
     end
 
     # Remove an endpoint from the system
-    # ==== Return
-    # _nil_
+    # Return::
+    #   _nil_
     def s3_del_endpoint(endpoint)
       sender(CMD_S3_DEL_ENDPOINT % endpoint)
       nil
     end
 
     # Retrieve an endpoint in the system
-    # ==== Return
-    # Array of Endpoint
+    # Return::
+    #   Array of Endpoint
     def s3_get_endpoints
       endpoints = sender(CMD_S3_GET_ENDPOINTS)[:endpoints]
       endpoints.map {|endpoint| Endpoint.new(endpoint) }
     end
 
     # Add an Bucket in the system
-    # ==== Return
-    # _nil_
+    # Return::
+    #   _nil_
     def s3_add_bucket(bucket_name, access_key_id)
       sender(CMD_S3_ADD_BUCKET % [bucket_name, access_key_id])
       nil
     end
 
     # Retrieve all buckets from the system
-    # ==== Return
-    # Array of Bucket
+    # Return::
+    #   Array of Bucket
     def s3_get_buckets
       buckets = sender(CMD_S3_GET_BUCKETS)[:buckets]
       buckets.map {|bucket| Bucket.new(bucket) }
@@ -260,8 +260,8 @@ module LeoFSManager
     end
 
     # Send a request to LeoFS Manager
-    # ==== Return
-    # Hash
+    # Return::
+    #   Hash
     def sender(command)
       begin
         @socket.puts command
