@@ -62,7 +62,7 @@ module Dummy
     }.to_json
 
     Whereis = {
-      :buckets => [
+      :assigned_info => [
         { 
           :node => "storage_0@127.0.0.1",
           :vnode_id => "",
@@ -152,11 +152,6 @@ describe LeoFSManager do
     @manager = Client.new("#{Host}:#{Port}")
   end
 
-  it "has version" do
-    defined?(VERSION).should eql "constant"
-    VERSION.should eql "0.2.1"
-  end
-
   it "raises error when it is passed invalid params" do
     lambda { Client.new }.should raise_error
   end
@@ -167,14 +162,14 @@ describe LeoFSManager do
     end
 
     it "returns SystemInfo" do
-      @manager.status.system_info.should be_a Status::SystemInfo
+      @manager.status.system_info.should be_a Status::System
     end
 
     it "returns node list" do
       node_list = @manager.status.node_list
       node_list.should be_a Array
       node_list.each do |node|
-        node.should be_a Status::NodeInfo
+        node.should be_a Status::Node
       end
     end
   end
@@ -184,14 +179,14 @@ describe LeoFSManager do
       result = @manager.whereis("path")
       result.should be_a Array
       result.each do |where_info|
-        where_info.should be_a WhereInfo
+        where_info.should be_a AssignedFile
       end
     end    
   end
 
   describe "#du" do
     it "returns DiskUsage" do
-      @manager.du("node").should be_a DiskUsage
+      @manager.du("node").should be_a StorageStat
     end
   end
 
