@@ -43,7 +43,6 @@ module LeoFSManager
   end
 
   class Client
-    ## LeoFS-related commands:
     CMD_VERSION          = "version"
     CMD_STATUS           = "status %s"
     CMD_START            = "start"
