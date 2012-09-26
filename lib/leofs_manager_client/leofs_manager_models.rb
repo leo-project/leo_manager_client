@@ -36,7 +36,16 @@ module LeoFSManager
     end
 
     class System
-      attr_reader :version, :n, :r, :w, :d, :ring_size, :ring_cur, :ring_prev
+      attr_reader :version, :ring_size, :ring_cur, :ring_prev
+
+      # number of replicas
+      attr_reader :n
+      # number of replicas needed for a successful READ operation
+      attr_reader :r
+      # number of replicas needed for a successful WRITE operation
+      attr_reader :w
+      # number of replicas needed for a successful DELETE operation
+      attr_reader :d
 
       def initialize(h)
         @version = h[:version]
