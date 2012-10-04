@@ -263,6 +263,7 @@ module LeoFSManager
     # Return::
     #   Hash
     def sender(command)
+      response = nil
       begin
         @mutex.synchronize do
           @socket.puts command
