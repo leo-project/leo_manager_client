@@ -71,6 +71,7 @@ module LeoFSManager
       set_current_server
       final = Remover.new(@data = [])
       ObjectSpace.define_finalizer(self, final)
+      @mutex = Mutex.new
       connect
     end
 
@@ -263,8 +264,10 @@ module LeoFSManager
     #   Hash
     def sender(command)
       begin
-        @socket.puts command
-        response = JSON.parse(@socket.gets, symbolize_names: true)
+        @mutex.synchronize do
+          @socket.puts command
+          response = JSON.parse(@socket.gets, symbolize_names: true)
+        end
       rescue => ex
         raise "An Error occured: #{ex.class} (server: #{@current_server})\n#{ex.message}"
       end
