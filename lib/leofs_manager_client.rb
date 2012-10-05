@@ -26,7 +26,7 @@ require "time"
 require_relative "leofs_manager_client/leofs_manager_models"
 
 module LeoFSManager
-  VERSION = "0.2.4"
+  VERSION = "0.2.5"
 
   # Class for close TCP socket on GC.
   class Remover
