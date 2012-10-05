@@ -26,7 +26,7 @@ require "time"
 require_relative "leofs_manager_client/leofs_manager_models"
 
 module LeoFSManager
-  VERSION = "0.2.4"
+  VERSION = "0.2.5"
 
   # Class for close TCP socket on GC.
   class Remover
@@ -71,6 +71,7 @@ module LeoFSManager
       set_current_server
       final = Remover.new(@data = [])
       ObjectSpace.define_finalizer(self, final)
+      @mutex = Mutex.new
       connect
     end
 
@@ -262,9 +263,12 @@ module LeoFSManager
     # Return::
     #   Hash
     def sender(command)
+      response = nil
       begin
-        @socket.puts command
-        response = JSON.parse(@socket.gets, symbolize_names: true)
+        @mutex.synchronize do
+          @socket.puts command
+          response = JSON.parse(@socket.gets, symbolize_names: true)
+        end
       rescue => ex
         raise "An Error occured: #{ex.class} (server: #{@current_server})\n#{ex.message}"
       end
