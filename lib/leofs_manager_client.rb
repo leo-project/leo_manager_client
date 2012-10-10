@@ -225,7 +225,7 @@ module LeoFSManager
           host = m[:host]
           port = Integer(m[:port])
 
-          raise Error, "Invalid Port Number: #{port}" unless 0 <= port && port <= 65535
+          raise "Invalid Port Number: #{port}" unless 0 <= port && port <= 65535
           { :host => host, :port => port, :retry_count => 0 }
         else
           server
