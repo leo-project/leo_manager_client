@@ -62,7 +62,7 @@ module LeoFSManager
     # Node Status Model
     class Node
       attr_reader :version, :type, :node, :state, :log_dir, :ring_cur, :ring_prev, :joined_at,
-                  :tota_mem_usage, :system_mem_usage,  :procs_mem_usage, :ets_mem_usage, :num_of_procs
+                  :total_mem_usage, :system_mem_usage,  :procs_mem_usage, :ets_mem_usage, :num_of_procs
 
       def initialize(h)
         @version   = h[:version]
