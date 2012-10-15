@@ -184,10 +184,11 @@ module LeoFSManager
     # Remove an endpoint from the system
     # Return::
     #   _nil_
-    def s3_del_endpoint(endpoint)
+    def s3_delete_endpoint(endpoint)
       sender(CMD_S3_DEL_ENDPOINT % endpoint)
       nil
     end
+    alias :s3_del_endpoint, :s3_delete_endpoint
 
     # Retrieve an endpoint in the system
     # Return::
