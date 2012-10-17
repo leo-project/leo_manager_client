@@ -102,29 +102,32 @@ module Dummy
     Thread.new do
       TCPServer.open(Host, Port) do |server|
         loop do
-          socket = server.accept
-          while line = socket.gets.split.first
-            line.rstrip!
-            begin
-              case line
-              when "status"
-                result = Response::Status
-              when "s3-get-buckets"
-                result = Response::S3GetBuckets
-              when "whereis"
-                result = Response::Whereis
-              when "s3-get-endpoints"
-                result = Response::S3GetEndpoints
-              when "s3-get-buckets"
-                result = Response::S3GetBuckets
-              else
-                result = { :result => line }.to_json
+          begin
+            socket = server.accept
+            while line = socket.readline.split.first
+              line.rstrip!
+              begin
+                case line
+                when "status"
+                  result = Response::Status
+                when "s3-get-buckets"
+                  result = Response::S3GetBuckets
+                when "whereis"
+                  result = Response::Whereis
+                when "s3-get-endpoints"
+                  result = Response::S3GetEndpoints
+                when "s3-get-buckets"
+                  result = Response::S3GetBuckets
+                else
+                  result = { :result => line }.to_json
+                end
+              rescue => ex
+                result = { :error => ex.message }.to_json
+              ensure
+                socket.puts(result)
               end
-            rescue => ex
-              result = { :error => ex.message }.to_json
-            ensure
-              socket.puts(result)
             end
+          rescue EOFError
           end
         end
       end
@@ -166,7 +169,7 @@ describe LeoFSManager do
         @manager.status.system_info.should be_a Status::System
       end
 
-      it "returns node list" do
+      it "returns Array of Node" do
         node_list = @manager.status.node_list
         node_list.should be_a Array
         node_list.each do |node|
@@ -222,6 +225,18 @@ describe LeoFSManager do
         it "returns nil" do
           @manager.send(api, *(["argument"] * num_of_args)).should be_nil
         end
+      end
+    end
+
+    describe "#disconnect!" do
+      it "returns nil" do
+        @manager.disconnect!.should be_nil
+      end
+
+      it "accepts no more requests" do
+        lambda {
+          @manager.status
+        }.should raise_error
       end
     end
   end
