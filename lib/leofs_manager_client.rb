@@ -268,7 +268,7 @@ module LeoFSManager
       begin
         @mutex.synchronize do
           @socket.puts command
-          response = JSON.parse(@socket.gets, symbolize_names: true)
+          response = JSON.parse(@socket.readline, symbolize_names: true)
         end
       rescue => ex
         raise "An Error occured: #{ex.class} (server: #{@current_server})\n#{ex.message}"
