@@ -172,7 +172,7 @@ module LeoFSManager
       sender(CMD_S3_DEL_ENDPOINT % endpoint)
       nil
     end
-    alias :s3_del_endpoint, :s3_delete_endpoint
+    alias :s3_del_endpoint :s3_delete_endpoint
 
     # Retrieve an endpoint in the system
     # Return::
@@ -219,7 +219,7 @@ module LeoFSManager
     end
 
     def set_current_server
-      raise Error, "No servers to connect" if @servers.empty?
+      raise "No servers to connect" if @servers.empty?
       @current_server = @servers.first
     end
 
@@ -229,7 +229,6 @@ module LeoFSManager
       begin
         @socket = TCPSocket.new(@current_server[:host], @current_server[:port])
         @socket.autoclose = true
-        @data[0] = @socket
       rescue => ex
         warn "Faild to connect: #{ex.class} (server: #{@current_server})"
         warn ex.message
