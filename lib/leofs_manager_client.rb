@@ -28,20 +28,6 @@ require_relative "leofs_manager_client/leofs_manager_models"
 module LeoFSManager
   VERSION = "0.2.6"
 
-  # Class for close TCP socket on GC.
-  class Remover
-    def initialize(data)
-      @data = data
-    end
-
-    # it will be called on GC.
-    def call(*args)
-      socket = @data[0]
-      socket.close if socket && !socket.closed?
-      warn "Closed socket: #{socket}" if $DEBUG
-    end
-  end
-
   class Client
     CMD_VERSION          = "version"
     CMD_STATUS           = "status %s"
@@ -69,8 +55,6 @@ module LeoFSManager
     def initialize(*servers)
       @servers = parse_servers(servers)
       set_current_server
-      final = Remover.new(@data = [])
-      ObjectSpace.define_finalizer(self, final)
       @mutex = Mutex.new
       connect
     end
@@ -244,6 +228,7 @@ module LeoFSManager
       retry_count = 0
       begin
         @socket = TCPSocket.new(@current_server[:host], @current_server[:port])
+        @socket.autoclose = true
         @data[0] = @socket
       rescue => ex
         warn "Faild to connect: #{ex.class} (server: #{@current_server})"
