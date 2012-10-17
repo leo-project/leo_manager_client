@@ -147,79 +147,81 @@ NoResultAPIs = {
 include LeoFSManager
 
 describe LeoFSManager do
-  before(:all) do
-    Dummy::Manager.new
-    @manager = Client.new("#{Host}:#{Port}")
-  end
-
-  it "raises error when it is passed invalid params" do
-    lambda { Client.new }.should raise_error
-  end
-
-  describe "#status" do
-    it "returns Status" do
-      @manager.status.should be_a Status
+  describe Client do
+    before(:all) do
+      Dummy::Manager.new
+      @manager = Client.new("#{Host}:#{Port}")
     end
 
-    it "returns SystemInfo" do
-      @manager.status.system_info.should be_a Status::System
+    it "raises error when it is passed invalid params" do
+      lambda { Client.new }.should raise_error
     end
 
-    it "returns node list" do
-      node_list = @manager.status.node_list
-      node_list.should be_a Array
-      node_list.each do |node|
-        node.should be_a Status::Node
+    describe "#status" do
+      it "returns Status" do
+        @manager.status.should be_a Status
+      end
+
+      it "returns SystemInfo" do
+        @manager.status.system_info.should be_a Status::System
+      end
+
+      it "returns node list" do
+        node_list = @manager.status.node_list
+        node_list.should be_a Array
+        node_list.each do |node|
+          node.should be_a Status::Node
+        end
       end
     end
-  end
 
-  describe "#whereis" do
-    it "returns Array of WhereInfo" do
-      result = @manager.whereis("path")
-      result.should be_a Array
-      result.each do |where_info|
-        where_info.should be_a AssignedFile
-      end
-    end    
-  end
-
-  describe "#du" do
-    it "returns DiskUsage" do
-      @manager.du("node").should be_a StorageStat
+    describe "#whereis" do
+      it "returns Array of WhereInfo" do
+        result = @manager.whereis("path")
+        result.should be_a Array
+        result.each do |where_info|
+          where_info.should be_a AssignedFile
+        end
+      end    
     end
-  end
 
-  describe "#s3_gen_key" do
-    it "returns Credential" do
-      @manager.s3_gen_key("user_id").should be_a Credential
-    end 
-  end
-
-  describe "#s3_get_endpoints" do
-    it "returns Arrany of Endpoint" do
-      result = @manager.s3_get_endpoints
-      result.should be_a Array
-      result.each do |endpoint|
-        endpoint.should be_a Endpoint
+    describe "#du" do
+      it "returns DiskUsage" do
+        @manager.du("node").should be_a StorageStat
       end
     end
-  end
 
-  describe "#s3_get_buckets" do
-    it "returns Array of Bucket" do
-      result = @manager.s3_get_buckets
-      result.should be_a Array
-      result.each do |buckets|
-        buckets.should be_a Bucket
+    describe "#s3_gen_key" do
+      it "returns Credential" do
+        @manager.s3_gen_key("user_id").should be_a Credential
+      end 
+    end
+
+    describe "#s3_get_endpoints" do
+      it "returns Arrany of Endpoint" do
+        result = @manager.s3_get_endpoints
+        result.should be_a Array
+        result.each do |endpoint|
+          endpoint.should be_a Endpoint
+        end
       end
     end
-  end
 
-  NoResultAPIs.each do |api, num_of_args|
-    describe "##{api}" do
-      it "returns nil" do
-        @manager.send(api, *(["argument"] * num_of_args)).should be_nil
+    describe "#s3_get_buckets" do
+      it "returns Array of Bucket" do
+        result = @manager.s3_get_buckets
+        result.should be_a Array
+        result.each do |buckets|
+          buckets.should be_a Bucket
+        end
+      end
+    end
+
+    NoResultAPIs.each do |api, num_of_args|
+      describe "##{api}" do
+        it "returns nil" do
+          @manager.send(api, *(["argument"] * num_of_args)).should be_nil
+        end
       end
     end
   end
