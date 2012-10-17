@@ -198,6 +198,13 @@ module LeoFSManager
       buckets.map {|bucket| Bucket.new(bucket) }
     end
 
+    # Disconnect to LeoFS Manager explicitly
+    # Return::
+    #   _nil_
+    def disconnect!
+      disconnect
+    end
+
     ## ======================================================================
     ## PRIVATE
     ## ======================================================================
@@ -219,6 +226,7 @@ module LeoFSManager
     end
 
     def set_current_server
+      @servers.delete(@current_server) if @current_server
       raise "No servers to connect" if @servers.empty?
       @current_server = @servers.first
     end
@@ -228,20 +236,30 @@ module LeoFSManager
       retry_count = 0
       begin
         @socket = TCPSocket.new(@current_server[:host], @current_server[:port])
-        @socket.autoclose = true
       rescue => ex
         warn "Faild to connect: #{ex.class} (server: #{@current_server})"
         warn ex.message
         retry_count += 1
         if retry_count > 3
-          warn "Connecting another server..."
-          @socket.close if @socket && !@socket.closed?
-          @servers.delete(@current_server)
           set_current_server
+          warn "Connecting another server: #{@current_server}"
           retry_count = 0
         end
+        sleep 1
         retry
       end
+      @socket.autoclose = true
+      nil
+    end
+
+    def disconnect
+      @socket.close if @socket && !@socket.closed?
+    end
+
+    def reconnect
+      disconnect
+      sleep 1
+      connect
     end
 
     # Send a request to LeoFS Manager
@@ -254,6 +272,9 @@ module LeoFSManager
           @socket.puts command
           response = JSON.parse(@socket.readline, symbolize_names: true)
         end
+      rescue EOFError => ex
+        warn "EOFError occured (server: #{@current_server})"
+        reconnect
       rescue => ex
         raise "An Error occured: #{ex.class} (server: #{@current_server})\n#{ex.message}"
       end
