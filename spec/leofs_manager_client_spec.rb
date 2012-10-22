@@ -240,4 +240,12 @@ describe LeoFSManager do
       end
     end
   end
+
+  describe AssignedFile do
+    subject { LeoFSManager::AssignedFile.new({}) }
+
+    it "has 'num_of_chunks' reader" do
+      defined?(subject.num_of_chunks).should eql "method"
+    end
+  end
 end
