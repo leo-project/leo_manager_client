@@ -84,7 +84,7 @@ module LeoFSManager
 
   # Assigned file info Model
   class AssignedFile
-    attr_reader :node, :vnode_id, :size, :clock, :checksum, :timestamp, :delete
+    attr_reader :node, :vnode_id, :size, :clock, :checksum, :timestamp, :delete, :num_of_chunks
 
     def initialize(h)
       @node      = h[:node]
@@ -94,6 +94,7 @@ module LeoFSManager
       @checksum  = h[:checksum]
       @timestamp = h[:timestamp]
       @delete    = h[:delete]
+      @num_of_chunks = Integer(h[:num_of_chunks])
     end
   end
 

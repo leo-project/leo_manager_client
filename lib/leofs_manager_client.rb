@@ -26,21 +26,7 @@ require "time"
 require_relative "leofs_manager_client/leofs_manager_models"
 
 module LeoFSManager
-  VERSION = "0.2.6"
-
-  # Class for close TCP socket on GC.
-  class Remover
-    def initialize(data)
-      @data = data
-    end
-
-    # it will be called on GC.
-    def call(*args)
-      socket = @data[0]
-      socket.close if socket && !socket.closed?
-      warn "Closed socket: #{socket}" if $DEBUG
-    end
-  end
+  VERSION = "0.2.7"
 
   class Client
     CMD_VERSION          = "version"
@@ -69,8 +55,6 @@ module LeoFSManager
     def initialize(*servers)
       @servers = parse_servers(servers)
       set_current_server
-      final = Remover.new(@data = [])
-      ObjectSpace.define_finalizer(self, final)
       @mutex = Mutex.new
       connect
     end
@@ -184,10 +168,11 @@ module LeoFSManager
     # Remove an endpoint from the system
     # Return::
     #   _nil_
-    def s3_del_endpoint(endpoint)
+    def s3_delete_endpoint(endpoint)
       sender(CMD_S3_DEL_ENDPOINT % endpoint)
       nil
     end
+    alias :s3_del_endpoint :s3_delete_endpoint
 
     # Retrieve an endpoint in the system
     # Return::
@@ -213,6 +198,13 @@ module LeoFSManager
       buckets.map {|bucket| Bucket.new(bucket) }
     end
 
+    # Disconnect to LeoFS Manager explicitly
+    # Return::
+    #   _nil_
+    def disconnect!
+      disconnect
+    end
+
     ## ======================================================================
     ## PRIVATE
     ## ======================================================================
@@ -234,7 +226,8 @@ module LeoFSManager
     end
 
     def set_current_server
-      raise Error, "No servers to connect" if @servers.empty?
+      @servers.delete(@current_server) if @current_server
+      raise "No servers to connect" if @servers.empty?
       @current_server = @servers.first
     end
 
@@ -243,20 +236,30 @@ module LeoFSManager
       retry_count = 0
       begin
         @socket = TCPSocket.new(@current_server[:host], @current_server[:port])
-        @data[0] = @socket
       rescue => ex
         warn "Faild to connect: #{ex.class} (server: #{@current_server})"
         warn ex.message
         retry_count += 1
         if retry_count > 3
-          warn "Connecting another server..."
-          @socket.close if @socket && !@socket.closed?
-          @servers.delete(@current_server)
           set_current_server
+          warn "Connecting another server: #{@current_server}"
           retry_count = 0
         end
+        sleep 1
         retry
       end
+      @socket.autoclose = true
+      nil
+    end
+
+    def disconnect
+      @socket.close if @socket && !@socket.closed?
+    end
+
+    def reconnect
+      disconnect
+      sleep 1
+      connect
     end
 
     # Send a request to LeoFS Manager
@@ -267,8 +270,11 @@ module LeoFSManager
       begin
         @mutex.synchronize do
           @socket.puts command
-          response = JSON.parse(@socket.gets, symbolize_names: true)
+          response = JSON.parse(@socket.readline, symbolize_names: true)
         end
+      rescue EOFError => ex
+        warn "EOFError occured (server: #{@current_server})"
+        reconnect
       rescue => ex
         raise "An Error occured: #{ex.class} (server: #{@current_server})\n#{ex.message}"
       end
