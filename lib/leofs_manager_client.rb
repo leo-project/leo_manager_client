@@ -277,9 +277,10 @@ module LeoFSManager
         reconnect
       rescue => ex
         raise "An Error occured: #{ex.class} (server: #{@current_server})\n#{ex.message}"
+      else
+        raise response[:error] if response.has_key?(:error)
+        return response
       end
-      raise response[:error] if response.has_key?(:error)
-      return response
     end
   end
 end
