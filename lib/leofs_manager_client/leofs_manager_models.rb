@@ -94,7 +94,7 @@ module LeoFSManager
       @checksum  = h[:checksum]
       @timestamp = h[:timestamp]
       @delete    = h[:delete]
-      @num_of_chunks = h[:num_of_chunks]
+      @num_of_chunks = Integer(h[:num_of_chunks])
     end
   end
 

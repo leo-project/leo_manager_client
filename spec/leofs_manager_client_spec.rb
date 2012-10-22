@@ -70,7 +70,8 @@ module Dummy
           :clock => "",
           :checksum => "",
           :timestamp => "",
-          :delete => 0
+          :delete => 0,
+          :num_of_chunks => 0
         }
       ]
     }.to_json
@@ -184,6 +185,7 @@ describe LeoFSManager do
         result.should be_a Array
         result.each do |where_info|
           where_info.should be_a AssignedFile
+          where_info.num_of_chunks.should be_a Integer
         end
       end    
     end
@@ -238,14 +240,6 @@ describe LeoFSManager do
           @manager.status
         }.should raise_error
       end
-    end
-  end
-
-  describe AssignedFile do
-    subject { LeoFSManager::AssignedFile.new({}) }
-
-    it "has 'num_of_chunks' reader" do
-      defined?(subject.num_of_chunks).should eql "method"
     end
   end
 end
