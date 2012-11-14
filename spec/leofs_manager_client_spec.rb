@@ -96,7 +96,7 @@ module Dummy
     }.to_json
   end
 
-  Argument = "hoge" # passed to command which requires some arguments.
+  Argument = "arg" # passed to command which requires some arguments.
 
   # dummy Manager
   class Manager
@@ -156,24 +156,19 @@ describe LeoFSManager do
       Dummy::Manager.new
       @manager = Client.new("#{Host}:#{Port}")
     end
+    subject { @manager }
 
     it "raises error when it is passed invalid params" do
       lambda { Client.new }.should raise_error
     end
 
     describe "#status" do
-      it "returns Status" do
-        @manager.status.should be_a Status
-      end
+      its(:status) { should be_a Status }
+      its("status.system_info") { should be_a Status::System }
 
-      it "returns SystemInfo" do
-        @manager.status.system_info.should be_a Status::System
-      end
-
-      it "returns Array of Node" do
-        node_list = @manager.status.node_list
-        node_list.should be_a Array
-        node_list.each do |node|
+      its("status.node_list") do
+        should be_a Array
+        subject.each do |node|
           node.should be_a Status::Node
         end
       end
@@ -181,7 +176,7 @@ describe LeoFSManager do
 
     describe "#whereis" do
       it "returns Array of WhereInfo" do
-        result = @manager.whereis("path")
+        result = subject.whereis("path")
         result.should be_a Array
         result.each do |where_info|
           where_info.should be_a AssignedFile
@@ -192,19 +187,19 @@ describe LeoFSManager do
 
     describe "#du" do
       it "returns DiskUsage" do
-        @manager.du("node").should be_a StorageStat
+        subject.du("node").should be_a StorageStat
       end
     end
 
     describe "#s3_gen_key" do
       it "returns Credential" do
-        @manager.s3_gen_key("user_id").should be_a Credential
+        subject.s3_gen_key("user_id").should be_a Credential
       end 
     end
 
     describe "#s3_get_endpoints" do
       it "returns Arrany of Endpoint" do
-        result = @manager.s3_get_endpoints
+        result = subject.s3_get_endpoints
         result.should be_a Array
         result.each do |endpoint|
           endpoint.should be_a Endpoint
@@ -213,10 +208,9 @@ describe LeoFSManager do
     end
 
     describe "#s3_get_buckets" do
-      it "returns Array of Bucket" do
-        result = @manager.s3_get_buckets
-        result.should be_a Array
-        result.each do |buckets|
+      its(:s3_get_buckets) do
+        should be_a Array
+        subject.each do |buckets|
           buckets.should be_a Bucket
         end
       end
@@ -225,19 +219,19 @@ describe LeoFSManager do
     NoResultAPIs.each do |api, num_of_args|
       describe "##{api}" do
         it "returns nil" do
-          @manager.send(api, *(["argument"] * num_of_args)).should be_nil
+          subject.send(api, *(["argument"] * num_of_args)).should be_nil
         end
       end
     end
 
     describe "#disconnect!" do
       it "returns nil" do
-        @manager.disconnect!.should be_nil
+        subject.disconnect!.should be_nil
       end
 
       it "accepts no more requests" do
         lambda {
-          @manager.status
+          subject.status
         }.should raise_error
       end
     end
