@@ -92,37 +92,43 @@ module Dummy
 
   # dummy Manager
   class Manager
-    Thread.new do
-      TCPServer.open(Host, Port) do |server|
-        loop do
-          begin
-            socket = server.accept
-            while line = socket.readline.split.first
-              line.rstrip!
-              begin
-                case line
-                when "status"
-                  result = Response::Status
-                when "s3-get-buckets"
-                  result = Response::S3GetBuckets
-                when "whereis"
-                  result = Response::Whereis
-                when "s3-get-endpoints"
-                  result = Response::S3GetEndpoints
-                when "s3-get-buckets"
-                  result = Response::S3GetBuckets
-                else
-                  result = { :result => line }.to_json
-                end
-              rescue => ex
-                result = { :error => ex.message }.to_json
-              ensure
-                socket.puts(result)
+    def initialize
+      t = Thread.new do
+        TCPServer.open(Host, Port) do |server|
+          loop do
+            begin
+              socket = server.accept
+              while line = socket.readline.split.first
+                response = process_line(line)
+                socket.puts(response)
               end
+            rescue EOFError
             end
-          rescue EOFError
           end
         end
+      end
+      nil until t.stop? # wait server start
+    end
+
+    def process_line(line)
+      line.rstrip!
+      begin
+        case line
+        when "status"
+          Response::Status
+        when "s3-get-buckets"
+          Response::S3GetBuckets
+        when "whereis"
+          Response::Whereis
+        when "s3-get-endpoints"
+          Response::S3GetEndpoints
+        when "s3-get-buckets"
+          Response::S3GetBuckets
+        else
+          { :result => line }.to_json
+        end
+      rescue => ex
+        { :error => ex.message }.to_json
       end
     end
   end
