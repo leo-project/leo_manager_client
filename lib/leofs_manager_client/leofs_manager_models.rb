@@ -121,6 +121,16 @@ module LeoFSManager
     end
   end
 
+  class Account
+    attr_reader :user_id, :access_key_id, :created_at
+
+    def initialize(h)
+      @user_id = h[:user_id]
+      @access_key_id = h[:access_key_id]
+      @created_at = h[:created_at]
+    end
+  end
+
   # Endpoint
   class Endpoint
     # host of the endpoint
