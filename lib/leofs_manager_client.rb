@@ -270,7 +270,7 @@ module LeoFSManager
       response = nil
       begin
         @mutex.synchronize do
-          @socket.puts command
+          @socket.print "#{command}\r\n"
           response = JSON.parse(@socket.readline, symbolize_names: true)
         end
       rescue EOFError => ex
