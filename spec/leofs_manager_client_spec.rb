@@ -84,9 +84,9 @@ describe LeoFSManager do
       end
     end
 
-    describe "#s3_gen_key" do
+    describe "#s3_create_key" do
       it "returns Credential" do
-        subject.s3_gen_key("user_id").should be_a Credential
+        subject.s3_create_key("user_id").should be_a Credential
       end 
     end
 

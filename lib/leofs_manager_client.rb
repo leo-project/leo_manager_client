@@ -153,9 +153,10 @@ module LeoFSManager
     # Generate credential for LeoFS
     # Return::
     #   Credential
-    def s3_gen_key(user_id)
+    def s3_create_key(user_id)
       Credential.new(sender(CMD_S3_CRE_KEY % user_id))
     end
+    alias s3_gen_key s3_create_key
 
     # Insert an endpoint in the system
     # Return::
