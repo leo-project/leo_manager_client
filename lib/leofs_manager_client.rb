@@ -41,6 +41,7 @@ module LeoFSManager
     CMD_COMPACT          = "compact %s"
     CMD_PURGE            = "purge %s"
     CMD_S3_CRE_KEY       = "s3-create-key %s"
+    CMD_S3_GET_KEYS      = "s3-get-keys"
     CMD_S3_SET_ENDPOINT  = "s3-set-endpoint %s"
     CMD_S3_DEL_ENDPOINT  = "s3-delete-endpoint %s"
     CMD_S3_GET_ENDPOINTS = "s3-get-endpoints"
@@ -157,6 +158,11 @@ module LeoFSManager
       Credential.new(sender(CMD_S3_CRE_KEY % user_id))
     end
     alias s3_gen_key s3_create_key
+
+    def s3_get_keys
+      accounts = sender(CMD_S3_GET_KEYS)
+      accounts.map {|account| Account.new(account) }
+    end
 
     # Insert an endpoint in the system
     # Return::
