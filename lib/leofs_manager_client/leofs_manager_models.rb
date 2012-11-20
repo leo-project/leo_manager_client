@@ -121,7 +121,7 @@ module LeoFSManager
     end
   end
 
-  class Account
+  class User
     attr_reader :user_id, :access_key_id, :created_at
 
     def initialize(h)

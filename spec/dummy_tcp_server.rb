@@ -86,6 +86,12 @@ module Dummy
         }
       ]
     }.to_json
+
+    S3GetKeys = {
+      :users => [
+        { :access_key_id => "05236", :user_id => "_test_leofs_", :created_at => "2012-11-20 15:13:20 +0900" }
+      ]
+    }.to_json
   end
 
   Argument = "arg" # passed to command which requires some arguments.
@@ -124,6 +130,8 @@ module Dummy
           Response::S3GetEndpoints
         when "s3-get-buckets"
           Response::S3GetBuckets
+        when "s3-get-keys"
+          Response::S3GetKeys
         else
           { :result => line }.to_json
         end

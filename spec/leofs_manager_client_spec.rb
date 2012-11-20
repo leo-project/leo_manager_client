@@ -90,22 +90,24 @@ describe LeoFSManager do
       end 
     end
 
-    describe "#s3_get_endpoints" do
-      it "returns Arrany of Endpoint" do
-        result = subject.s3_get_endpoints
-        result.should be_a Array
-        result.each do |endpoint|
-          endpoint.should be_a Endpoint
-        end
+    its(:s3_get_keys) do
+      should be_a Array
+      subject.each do |account|
+        account.should be_a User
       end
     end
 
-    describe "#s3_get_buckets" do
-      its(:s3_get_buckets) do
-        should be_a Array
-        subject.each do |buckets|
-          buckets.should be_a Bucket
-        end
+    its(:s3_get_endpoints) do
+      should be_a Array
+      subject.each do |endpoint|
+        endpoint.should be_a Endpoint
+      end
+    end
+
+    its(:s3_get_buckets) do
+      should be_a Array
+      subject.each do |buckets|
+        buckets.should be_a Bucket
       end
     end
 

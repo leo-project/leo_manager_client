@@ -160,8 +160,8 @@ module LeoFSManager
     alias s3_gen_key s3_create_key
 
     def s3_get_keys
-      accounts = sender(CMD_S3_GET_KEYS)
-      accounts.map {|account| Account.new(account) }
+      users = sender(CMD_S3_GET_KEYS)[:users]
+      users.map {|account| User.new(account) }
     end
 
     # Insert an endpoint in the system
