@@ -102,6 +102,12 @@ describe LeoFSManager do
       end
     end
 
+    describe "#s3_delete_user" do
+      it "returns nil" do
+        subject.s3_update_user_role("user_id", "password").should be_nil
+      end
+    end
+
     its(:s3_get_keys) do
       should be_a Array
       subject.each do |account|
