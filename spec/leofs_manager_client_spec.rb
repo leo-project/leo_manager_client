@@ -55,6 +55,12 @@ describe LeoFSManager do
       lambda { Client.new }.should raise_error
     end
 
+    describe "#login" do
+      it "returns LoginInfo" do
+        subject.login("user_id", "pass").should be_a LoginInfo
+      end
+    end
+
     describe "#status" do
       its(:status) { should be_a Status }
       its("status.system_info") { should be_a Status::System }

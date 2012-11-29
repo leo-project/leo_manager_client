@@ -121,6 +121,19 @@ module LeoFSManager
     end
   end
 
+  class LoginInfo
+    attr_reader :id, :role_id, :access_key_id, :secret_key, :created_at
+
+    def initialize(h)
+      h = h[:user]
+      @id = h[:id]
+      @role_id = h[:role_id]
+      @access_key_id = h[:access_key_id]
+      @secret_key = h[:secret_key]
+      @created_at = h[:created_at]
+    end
+  end
+
   class User
     attr_reader :user_id, :access_key_id, :created_at
 

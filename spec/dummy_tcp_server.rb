@@ -24,6 +24,16 @@ require "socket"
 
 module Dummy
   module Response
+    Login = {
+      :user => {
+        :id => "foo",
+        :role_id => 0,
+        :access_key_id => "855d2f9bf21f51b4fd38",
+        :secret_key => "ea6d9540d6385f32d674c925929748e00e0e961a",
+        :created_at => "2012-11-29 17:18:39 +0900"
+      }
+    }.to_json
+
     Status = {
       :system_info => {
         :version => "0.10.1",
@@ -125,6 +135,8 @@ module Dummy
       line.rstrip!
       begin
         case line
+        when "login"
+          Response::Login
         when "status"
           Response::Status
         when "s3-get-buckets"
