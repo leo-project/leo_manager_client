@@ -41,6 +41,7 @@ module LeoFSManager
     CMD_COMPACT          = "compact %s"
     CMD_PURGE            = "purge %s"
     CMD_S3_CRE_USER      = "s3-create-user %s %s"
+    CMD_S3_UPD_USER_ROLE = "s3-update-user-role %s %s"
     CMD_S3_GET_KEYS      = "s3-get-keys"
     CMD_S3_SET_ENDPOINT  = "s3-set-endpoint %s"
     CMD_S3_DEL_ENDPOINT  = "s3-delete-endpoint %s"
@@ -156,6 +157,14 @@ module LeoFSManager
     #   Credential
     def s3_create_user(user_id, password)
       Credential.new(sender(CMD_S3_CRE_USER % [user_id, password]))
+    end
+
+    # Update user role
+    # Return ::
+    #   _nil_
+    def s3_update_user_role(user_id, role)
+      sender(CMD_S3_UPD_USER_ROLE % [user_id, role])
+      nil
     end
 
     def s3_get_keys
