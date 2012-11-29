@@ -88,7 +88,7 @@ module LeoFSManager
     # Return::
     #   LoginInfo
     def login(user_id, password)
-      LoginInfo.new(sender(CMD_LOGIN))
+      LoginInfo.new(sender(CMD_LOGIN % [user_id, password]))
     end
 
     # Launch LeoFS's storage cluster
