@@ -179,7 +179,7 @@ module LeoFSManager
 
     # Delete user
     # Return::
-    #   _nil
+    #   _nil_
     def s3_delete_user(user_id, password)
       sender(CMD_S3_DEL_USER % [user_id, password])
       nil
