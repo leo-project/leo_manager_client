@@ -30,6 +30,7 @@ module LeoFSManager
 
   class Client
     CMD_VERSION          = "version"
+    CMD_LOGIN            = "login %s %s"
     CMD_STATUS           = "status %s"
     CMD_START            = "start"
     CMD_DETACH           = "detach %s"
@@ -81,6 +82,13 @@ module LeoFSManager
     #   Status 
     def status(node=nil)
       Status.new(sender(CMD_STATUS % node))
+    end
+
+    # Login as specifies user
+    # Return::
+    #   LoginInfo
+    def login(user_id, password)
+      LoginInfo.new(sender(CMD_LOGIN))
     end
 
     # Launch LeoFS's storage cluster
