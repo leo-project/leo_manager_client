@@ -44,7 +44,7 @@ module LeoFSManager
     CMD_S3_CRE_USER      = "s3-create-user %s %s"
     CMD_S3_UPD_USER_ROLE = "s3-update-user-role %s %s"
     CMD_S3_UPD_USER_PASS = "s3-update-user-password %s %s"
-    CMD_S3_DEL_USER      = "s3-delete-user %s %s"
+    CMD_S3_DEL_USER      = "s3-delete-user %s"
     CMD_S3_GET_KEYS      = "s3-get-keys"
     CMD_S3_SET_ENDPOINT  = "s3-set-endpoint %s"
     CMD_S3_DEL_ENDPOINT  = "s3-delete-endpoint %s"
@@ -188,8 +188,8 @@ module LeoFSManager
     # Delete user
     # Return::
     #   _nil_
-    def s3_delete_user(user_id, password)
-      sender(CMD_S3_DEL_USER % [user_id, password])
+    def s3_delete_user(user_id)
+      sender(CMD_S3_DEL_USER % user_id)
       nil
     end
 
