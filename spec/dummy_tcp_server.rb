@@ -71,7 +71,7 @@ module Dummy
           :size => "",
           :clock => "",
           :checksum => "",
-          :timestamp => "",
+          :timestamp => "2012-12-07 16:51:08 +0900",
           :delete => 0,
           :num_of_chunks => 0
         }

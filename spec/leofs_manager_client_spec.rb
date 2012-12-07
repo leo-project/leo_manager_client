@@ -102,7 +102,7 @@ describe LeoFSManager do
 
     describe "#s3_update_user_role" do
       it "returns nil" do
-        subject.s3_update_user_role("user_id", "role").should be_nil
+        subject.s3_update_user_role("user_id", "admin").should be_nil
       end
     end
 

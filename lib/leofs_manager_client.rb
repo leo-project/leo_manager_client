@@ -52,10 +52,7 @@ module LeoFSManager
     CMD_S3_ADD_BUCKET    = "s3-add-bucket %s %s"
     CMD_S3_GET_BUCKETS   = "s3-get-buckets"
 
-    USER_ROLES = {
-      :normal => 1,
-      :admin  => 9
-    }
+    USER_ROLES = LoginInfo::RoleDef.invert
 
     # ======================================================================
     # APIs
