@@ -61,29 +61,22 @@ module LeoFSManager
 
     # Node Status Model
     class Node
-      attr_reader :version, :type, :node, :state, :log_dir, :ring_cur, :ring_prev, :joined_at,
-                  :total_mem_usage, :system_mem_usage,  :procs_mem_usage, :ets_mem_usage, :num_of_procs,
-                  :limit_of_procs, :kernel_poll, :thread_pool_size, :vm_version
+      @@properties = [
+        :version, :type, :node, :state, :log_dir, :ring_cur, :ring_prev, :joined_at,
+        :total_mem_usage, :system_mem_usage,  :procs_mem_usage, :ets_mem_usage, :num_of_procs,
+        :limit_of_procs, :kernel_poll, :thread_pool_size, :vm_version
+      ]
+
+      attr_reader *@@properties
 
       def initialize(h)
-        @version   = h[:version]
-        @type      = h[:type]
-        @node      = h[:node]
-        @state     = h[:state]
-        @log_dir   = h[:log_dir]
-        @ring_cur  = h[:ring_cur]
-        @ring_prev = h[:ring_prev]
-        @joined_at = Time.parse(h[:when])
-        @total_mem_usage  = h[:total_mem_usage]
-        @system_mem_usage = h[:system_mem_usage]
-        @procs_mem_usage  = h[:procs_mem_usage]
-        @ets_mem_usage    = h[:ets_mem_usage]
-        @num_of_procs     = h[:num_of_procs]
-        @limit_of_procs   = h[:limit_of_procs]
-        @kernel_poll      = h[:kernel_poll]
-        @thread_pool_size = h[:thread_pool_size]
-        @vm_version       = h[:vm_version]
+        @joined_at = Time.parse(h[:when]) if h.has_key?(:when)
+        @@properties.each do |property|
+          instance_variable_set("@#{property}", h[property]) if h.has_key?(property)
+        end
       end
+
+      alias when joined_at
     end
   end
 
