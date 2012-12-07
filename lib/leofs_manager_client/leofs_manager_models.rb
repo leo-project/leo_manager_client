@@ -62,7 +62,7 @@ module LeoFSManager
     # Node Status Model
     class Node
       attr_reader :version, :type, :node, :state, :log_dir, :ring_cur, :ring_prev, :joined_at,
-                  :total_mem_usage, :system_mem_usage,  :procs_mem_usage, :ets_mem_usage, :num_of_procs
+                  :total_mem_usage, :system_mem_usage,  :procs_mem_usage, :ets_mem_usage, :num_of_procs,
                   :limit_of_procs, :kernel_poll, :thread_pool_size, :vm_version
 
       def initialize(h)
@@ -73,7 +73,7 @@ module LeoFSManager
         @log_dir   = h[:log_dir]
         @ring_cur  = h[:ring_cur]
         @ring_prev = h[:ring_prev]
-        @joined_at = h[:when]
+        @joined_at = Time.parse(h[:when])
         @total_mem_usage  = h[:total_mem_usage]
         @system_mem_usage = h[:system_mem_usage]
         @procs_mem_usage  = h[:procs_mem_usage]
