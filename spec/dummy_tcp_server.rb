@@ -99,7 +99,7 @@ module Dummy
 
     S3GetUsers = {
       :users => [
-        { :access_key_id => "05236", :user_id => "_test_leofs_", :created_at => "2012-11-20 15:13:20 +0900" }
+        { :access_key_id => "05236", :user_id => "_test_leofs_", :role_id => 1, :created_at => "2012-11-20 15:13:20 +0900" }
       ]
     }.to_json
 
