@@ -100,11 +100,14 @@ module LeoFSManager
 
   # Storage Status Model
   class StorageStat
-    attr_reader :file_size, :total_of_objects
+    attr_reader :total_of_objects
 
     def initialize(h)
-      @file_size = h[:file_size]
       @total_of_objects = h[:total_of_objects]
+    end
+
+    def file_size
+      warn "property 'file_size' is deprecated"
     end
   end
 
