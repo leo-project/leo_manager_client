@@ -63,6 +63,7 @@ module LeoFSManager
     class Node
       attr_reader :version, :type, :node, :state, :log_dir, :ring_cur, :ring_prev, :joined_at,
                   :total_mem_usage, :system_mem_usage,  :procs_mem_usage, :ets_mem_usage, :num_of_procs
+                  :limit_of_procs, :kernel_poll, :thread_pool_size, :vm_version
 
       def initialize(h)
         @version   = h[:version]
@@ -78,6 +79,10 @@ module LeoFSManager
         @procs_mem_usage  = h[:procs_mem_usage]
         @ets_mem_usage    = h[:ets_mem_usage]
         @num_of_procs     = h[:num_of_procs]
+        @limit_of_procs   = h[:limit_of_procs]
+        @kernel_poll      = h[:kernel_poll]
+        @thread_pool_size = h[:thread_pool_size]
+        @vm_version       = h[:vm_version]
       end
     end
   end
