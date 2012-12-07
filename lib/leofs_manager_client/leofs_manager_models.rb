@@ -30,7 +30,7 @@ module LeoFSManager
     attr_reader :node_list
 
     def initialize(h)
-      @node_stat = Node.new(h[:node_stat]) if h.has_key?(:node_stat)
+      @node_stat = NodeStat.new(h[:node_stat]) if h.has_key?(:node_stat)
       @system_info = System.new(h[:system_info]) if h.has_key?(:system_info)
       @node_list = h[:node_list].map {|node| Node.new(node) } if h.has_key?(:node_list)
     end
@@ -49,10 +49,10 @@ module LeoFSManager
 
       def initialize(h)
         @version = h[:version]
-        @n = h[:n]
-        @r = h[:r]
-        @w = h[:w]
-        @d = h[:d]
+        @n = Integer(h[:n])
+        @r = Integer(h[:r])
+        @w = Integer(h[:w])
+        @d = Integer(h[:d])
         @ring_size = h[:ring_size]
         @ring_cur  = h[:ring_cur]
         @ring_prev = h[:ring_prev]
@@ -61,22 +61,35 @@ module LeoFSManager
 
     # Node Status Model
     class Node
+      attr_reader :type, :node, :state, :ring_cur, :ring_prev, :when
+
+      def initialize(h)
+        @type  = h[:type]
+        @node  = h[:node]
+        @when  = Time.parse(h[:when])
+        @state = h[:state]
+        @ring_cur  = h[:ring_cur]
+        @ring_prev = h[:ring_prev]
+      end
+
+      alias joined_at when
+    end
+
+    class NodeStat
       @@properties = [
-        :version, :type, :node, :state, :log_dir, :ring_cur, :ring_prev, :joined_at,
-        :total_mem_usage, :system_mem_usage,  :procs_mem_usage, :ets_mem_usage, :num_of_procs,
-        :limit_of_procs, :kernel_poll, :thread_pool_size, :vm_version
+        :version, :log_dir, :ring_cur, :ring_prev, :vm_version,
+        :total_mem_usage, :system_mem_usage, :procs_mem_usage,
+        :ets_mem_usage, :num_of_procs, :limit_of_procs,
+        :kernel_poll, :thread_pool_size
       ]
 
       attr_reader *@@properties
 
       def initialize(h)
-        @joined_at = Time.parse(h[:when]) if h.has_key?(:when)
         @@properties.each do |property|
-          instance_variable_set("@#{property}", h[property]) if h.has_key?(property)
+          instance_variable_set("@#{property}", h[property])
         end
       end
-
-      alias when joined_at
     end
   end
 
@@ -92,7 +105,7 @@ module LeoFSManager
       @checksum  = h[:checksum]
       @timestamp = h[:timestamp]
       @delete    = h[:delete]
-      @num_of_chunks = Integer(h[:num_of_chunks])
+      @num_of_chunks = h[:num_of_chunks]
     end
   end
 
