@@ -97,7 +97,7 @@ module Dummy
       ]
     }.to_json
 
-    S3GetKeys = {
+    S3GetUsers = {
       :users => [
         { :access_key_id => "05236", :user_id => "_test_leofs_", :created_at => "2012-11-20 15:13:20 +0900" }
       ]
@@ -147,8 +147,8 @@ module Dummy
           Response::S3GetEndpoints
         when "s3-get-buckets"
           Response::S3GetBuckets
-        when "s3-get-keys"
-          Response::S3GetKeys
+        when "s3-get-users"
+          Response::S3GetUsers
         when "s3-create-user"
           Response::S3CreateUser
         else

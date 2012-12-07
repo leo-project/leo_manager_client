@@ -94,6 +94,10 @@ describe LeoFSManager do
       it "returns Credential" do
         subject.s3_create_user("user_id", "password").should be_a Credential
       end 
+
+      it "goes with only user_id" do
+        subject.s3_create_user("user_id").should be_a Credential
+      end
     end
 
     describe "#s3_update_user_role" do
@@ -104,17 +108,17 @@ describe LeoFSManager do
 
     describe "#s3_update_user_password" do
       it "returns nil" do
-        subject.s3_update_user_role("user_id", "new_password").should be_nil
+        subject.s3_update_user_password("user_id", "new_password").should be_nil
       end
     end
 
     describe "#s3_delete_user" do
       it "returns nil" do
-        subject.s3_update_user_role("user_id").should be_nil
+        subject.s3_delete_user("user_id").should be_nil
       end
     end
 
-    its(:s3_get_keys) do
+    its(:s3_get_users) do
       should be_a Array
       subject.each do |account|
         account.should be_a User
