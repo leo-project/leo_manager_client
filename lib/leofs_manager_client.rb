@@ -26,7 +26,7 @@ require "time"
 require_relative "leofs_manager_client/leofs_manager_models"
 
 module LeoFSManager
-  VERSION = "0.2.11"
+  VERSION = "0.2.12"
 
   class Client
     CMD_VERSION          = "version"
@@ -52,7 +52,7 @@ module LeoFSManager
     CMD_S3_ADD_BUCKET    = "s3-add-bucket %s %s"
     CMD_S3_GET_BUCKETS   = "s3-get-buckets"
 
-    USER_ROLES = LoginInfo::RoleDef.invert
+    USER_ROLES = RoleDef.invert
 
     # ======================================================================
     # APIs

@@ -135,15 +135,15 @@ module LeoFSManager
     end
   end
 
+  RoleDef = {
+    1 => :normal,
+    9 => :admin
+  }
+  RoleDef.default_proc = proc {|_, key| raise "invalid @user_id: #{key}" }
+  RoleDef.freeze
+
   class LoginInfo
     attr_reader :id, :role_id, :access_key_id, :secret_key, :created_at
-
-    RoleDef = {
-      1 => :normal,
-      9 => :admin
-    }
-    RoleDef.default_proc = proc {|_, key| raise "invalid @user_id: #{key}" }
-    RoleDef.freeze
 
     def initialize(h)
       h = h[:user]
@@ -160,13 +160,17 @@ module LeoFSManager
   end
 
   class User
-    attr_reader :user_id, :access_key_id, :created_at
+    attr_reader :user_id, :role_id, :access_key_id, :created_at
 
     def initialize(h)
       @user_id = h[:user_id]
       @role_id = h[:role_id]
       @access_key_id = h[:access_key_id]
       @created_at = Time.parse(h[:created_at])
+    end
+
+    def role
+      RoleDef[@role_id]
     end
   end
 
