@@ -30,7 +30,7 @@ module LeoFSManager
     attr_reader :node_list
 
     def initialize(h)
-      @node_stat = Node.new(h[:node_stat]) if h.has_key?(:node_stat)
+      @node_stat = NodeStat.new(h[:node_stat]) if h.has_key?(:node_stat)
       @system_info = System.new(h[:system_info]) if h.has_key?(:system_info)
       @node_list = h[:node_list].map {|node| Node.new(node) } if h.has_key?(:node_list)
     end
@@ -49,11 +49,11 @@ module LeoFSManager
 
       def initialize(h)
         @version = h[:version]
-        @n = h[:n]
-        @r = h[:r]
-        @w = h[:w]
-        @d = h[:d]
-        @ring_size = h[:ring_size]
+        @n = Integer(h[:n])
+        @r = Integer(h[:r])
+        @w = Integer(h[:w])
+        @d = Integer(h[:d])
+        @ring_size = Integer(h[:ring_size])
         @ring_cur  = h[:ring_cur]
         @ring_prev = h[:ring_prev]
       end
@@ -61,23 +61,34 @@ module LeoFSManager
 
     # Node Status Model
     class Node
-      attr_reader :version, :type, :node, :state, :log_dir, :ring_cur, :ring_prev, :joined_at,
-                  :total_mem_usage, :system_mem_usage,  :procs_mem_usage, :ets_mem_usage, :num_of_procs
+      attr_reader :type, :node, :state, :ring_cur, :ring_prev, :when
 
       def initialize(h)
-        @version   = h[:version]
-        @type      = h[:type]
-        @node      = h[:node]
-        @state     = h[:state]
-        @log_dir   = h[:log_dir]
+        @type  = h[:type]
+        @node  = h[:node]
+        @when  = Time.parse(h[:when])
+        @state = h[:state]
         @ring_cur  = h[:ring_cur]
         @ring_prev = h[:ring_prev]
-        @joined_at = h[:when]
-        @total_mem_usage  = h[:total_mem_usage]
-        @system_mem_usage = h[:system_mem_usage]
-        @procs_mem_usage  = h[:procs_mem_usage]
-        @ets_mem_usage    = h[:ets_mem_usage]
-        @num_of_procs     = h[:num_of_procs]
+      end
+
+      alias joined_at when
+    end
+
+    class NodeStat
+      @@properties = [
+        :version, :log_dir, :ring_cur, :ring_prev, :vm_version,
+        :total_mem_usage, :system_mem_usage, :procs_mem_usage,
+        :ets_mem_usage, :num_of_procs, :limit_of_procs, :thread_pool_size
+      ]
+
+      attr_reader *@@properties
+
+      def initialize(h)
+        @@properties.each do |property|
+          instance_variable_set("@#{property}", h[property])
+        end
+        @kernel_poll = (h[:kernel_poll] == "true")
       end
     end
   end
@@ -92,19 +103,22 @@ module LeoFSManager
       @size      = h[:size]
       @clock     = h[:clock]
       @checksum  = h[:checksum]
-      @timestamp = h[:timestamp]
+      @timestamp = Time.parse(h[:timestamp])
       @delete    = h[:delete]
-      @num_of_chunks = Integer(h[:num_of_chunks])
+      @num_of_chunks = h[:num_of_chunks]
     end
   end
 
   # Storage Status Model
   class StorageStat
-    attr_reader :file_size, :total_of_objects
+    attr_reader :total_of_objects
 
     def initialize(h)
-      @file_size = h[:file_size]
       @total_of_objects = h[:total_of_objects]
+    end
+
+    def file_size
+      warn "property 'file_size' is deprecated"
     end
   end
 
@@ -124,13 +138,24 @@ module LeoFSManager
   class LoginInfo
     attr_reader :id, :role_id, :access_key_id, :secret_key, :created_at
 
+    RoleDef = {
+      1 => :normal,
+      9 => :admin
+    }
+    RoleDef.default_proc = proc {|_, key| raise "invalid @user_id: #{key}" }
+    RoleDef.freeze
+
     def initialize(h)
       h = h[:user]
       @id = h[:id]
       @role_id = h[:role_id]
       @access_key_id = h[:access_key_id]
       @secret_key = h[:secret_key]
-      @created_at = h[:created_at]
+      @created_at = Time.parse(h[:created_at])
+    end
+
+    def role
+      RoleDef[@role_id]
     end
   end
 
@@ -139,8 +164,9 @@ module LeoFSManager
 
     def initialize(h)
       @user_id = h[:user_id]
+      @role_id = h[:role_id]
       @access_key_id = h[:access_key_id]
-      @created_at = h[:created_at]
+      @created_at = Time.parse(h[:created_at])
     end
   end
 
@@ -153,7 +179,7 @@ module LeoFSManager
 
     def initialize(h)
       @endpoint = h[:endpoint]
-      @created_at = h[:created_at]
+      @created_at = Time.parse(h[:created_at])
     end
   end
 
@@ -169,7 +195,7 @@ module LeoFSManager
     def initialize(h)
       @name       = h[:bucket]
       @owner      = h[:owner]
-      @created_at = h[:created_at]
+      @created_at = Time.parse(h[:created_at])
     end
   end
 end

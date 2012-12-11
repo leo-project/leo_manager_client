@@ -26,7 +26,7 @@ require "time"
 require_relative "leofs_manager_client/leofs_manager_models"
 
 module LeoFSManager
-  VERSION = "0.2.10"
+  VERSION = "0.2.11"
 
   class Client
     CMD_VERSION          = "version"
@@ -44,13 +44,15 @@ module LeoFSManager
     CMD_S3_CRE_USER      = "s3-create-user %s %s"
     CMD_S3_UPD_USER_ROLE = "s3-update-user-role %s %s"
     CMD_S3_UPD_USER_PASS = "s3-update-user-password %s %s"
-    CMD_S3_DEL_USER      = "s3-delete-user %s %s"
-    CMD_S3_GET_KEYS      = "s3-get-keys"
+    CMD_S3_DEL_USER      = "s3-delete-user %s"
+    CMD_S3_GET_USERS     = "s3-get-users"
     CMD_S3_SET_ENDPOINT  = "s3-set-endpoint %s"
     CMD_S3_DEL_ENDPOINT  = "s3-delete-endpoint %s"
     CMD_S3_GET_ENDPOINTS = "s3-get-endpoints"
     CMD_S3_ADD_BUCKET    = "s3-add-bucket %s %s"
     CMD_S3_GET_BUCKETS   = "s3-get-buckets"
+
+    USER_ROLES = LoginInfo::RoleDef.invert
 
     # ======================================================================
     # APIs
@@ -165,7 +167,7 @@ module LeoFSManager
     # Generate credential for LeoFS
     # Return::
     #   Credential
-    def s3_create_user(user_id, password)
+    def s3_create_user(user_id, password=nil)
       Credential.new(sender(CMD_S3_CRE_USER % [user_id, password]))
     end
 
@@ -173,6 +175,8 @@ module LeoFSManager
     # Return ::
     #   _nil_
     def s3_update_user_role(user_id, role)
+      role = role.to_sym if role.is_a? String
+      role = USER_ROLES[role] if role.is_a? Symbol
       sender(CMD_S3_UPD_USER_ROLE % [user_id, role])
       nil
     end
@@ -188,13 +192,13 @@ module LeoFSManager
     # Delete user
     # Return::
     #   _nil_
-    def s3_delete_user(user_id, password)
-      sender(CMD_S3_DEL_USER % [user_id, password])
+    def s3_delete_user(user_id)
+      sender(CMD_S3_DEL_USER % user_id)
       nil
     end
 
-    def s3_get_keys
-      users = sender(CMD_S3_GET_KEYS)[:users]
+    def s3_get_users
+      users = sender(CMD_S3_GET_USERS)[:users]
       users.map {|account| User.new(account) }
     end
 
