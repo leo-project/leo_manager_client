@@ -78,7 +78,7 @@ module Dummy
       ]
     }.to_json
 
-    S3GetEndpoints = {
+    GetEndpoints = {
       :endpoints => [
         {:endpoint => "s3.amazonaws.com", :created_at=>"2012-09-21 15:08:11 +0900"},
         {:endpoint => "localhost", :created_at=>"2012-09-21 15:08:11 +0900"},
@@ -87,7 +87,7 @@ module Dummy
       ]
     }.to_json
 
-    S3GetBuckets = {
+    GetBuckets = {
       :buckets => [
         {
           :bucket => "test",
@@ -97,13 +97,13 @@ module Dummy
       ]
     }.to_json
 
-    S3GetUsers = {
+    GetUsers = {
       :users => [
         { :access_key_id => "05236", :user_id => "_test_leofs_", :role_id => 1, :created_at => "2012-11-20 15:13:20 +0900" }
       ]
     }.to_json
 
-    S3CreateUser = {
+    CreateUser = {
       :access_key_id => "xxxxxxxxxxxxxxxxxxxx",
       :secret_access_key => "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     }.to_json
@@ -139,18 +139,18 @@ module Dummy
           Response::Login
         when "status"
           Response::Status
-        when "s3-get-buckets"
-          Response::S3GetBuckets
+        when "get-buckets"
+          Response::GetBuckets
         when "whereis"
           Response::Whereis
-        when "s3-get-endpoints"
-          Response::S3GetEndpoints
-        when "s3-get-buckets"
-          Response::S3GetBuckets
-        when "s3-get-users"
-          Response::S3GetUsers
-        when "s3-create-user"
-          Response::S3CreateUser
+        when "get-endpoints"
+          Response::GetEndpoints
+        when "get-buckets"
+          Response::GetBuckets
+        when "get-users"
+          Response::GetUsers
+        when "create-user"
+          Response::CreateUser
         else
           { :result => line }.to_json
         end
