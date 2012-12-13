@@ -26,7 +26,7 @@ require "time"
 require_relative "leofs_manager_client/leofs_manager_models"
 
 module LeoFSManager
-  VERSION = "0.2.12"
+  VERSION = "0.2.13"
 
   class Client
     CMD_VERSION          = "version"
@@ -41,16 +41,16 @@ module LeoFSManager
     CMD_DU               = "du %s"
     CMD_COMPACT          = "compact %s"
     CMD_PURGE            = "purge %s"
-    CMD_S3_CRE_USER      = "s3-create-user %s %s"
-    CMD_S3_UPD_USER_ROLE = "s3-update-user-role %s %s"
-    CMD_S3_UPD_USER_PASS = "s3-update-user-password %s %s"
-    CMD_S3_DEL_USER      = "s3-delete-user %s"
-    CMD_S3_GET_USERS     = "s3-get-users"
-    CMD_S3_SET_ENDPOINT  = "s3-set-endpoint %s"
-    CMD_S3_DEL_ENDPOINT  = "s3-delete-endpoint %s"
-    CMD_S3_GET_ENDPOINTS = "s3-get-endpoints"
-    CMD_S3_ADD_BUCKET    = "s3-add-bucket %s %s"
-    CMD_S3_GET_BUCKETS   = "s3-get-buckets"
+    CMD_CRE_USER         = "create-user %s %s"
+    CMD_UPD_USER_ROLE    = "update-user-role %s %s"
+    CMD_UPD_USER_PASS    = "update-user-password %s %s"
+    CMD_DEL_USER         = "delete-user %s"
+    CMD_GET_USERS        = "get-users"
+    CMD_SET_ENDPOINT     = "set-endpoint %s"
+    CMD_DEL_ENDPOINT     = "delete-endpoint %s"
+    CMD_GET_ENDPOINTS    = "get-endpoints"
+    CMD_ADD_BUCKET       = "add-bucket %s %s"
+    CMD_GET_BUCKETS      = "get-buckets"
 
     USER_ROLES = RoleDef.invert
 
@@ -167,79 +167,79 @@ module LeoFSManager
     # Generate credential for LeoFS
     # Return::
     #   Credential
-    def s3_create_user(user_id, password=nil)
-      Credential.new(sender(CMD_S3_CRE_USER % [user_id, password]))
+    def create_user(user_id, password=nil)
+      Credential.new(sender(CMD_CRE_USER % [user_id, password]))
     end
 
     # Update user role
     # Return ::
     #   _nil_
-    def s3_update_user_role(user_id, role)
+    def update_user_role(user_id, role)
       role = role.to_sym if role.is_a? String
       role = USER_ROLES[role] if role.is_a? Symbol
-      sender(CMD_S3_UPD_USER_ROLE % [user_id, role])
+      sender(CMD_UPD_USER_ROLE % [user_id, role])
       nil
     end
 
     # Update user password
     # Return::
     #   _nil_
-    def s3_update_user_password(user_id, new_password)
-      sender(CMD_S3_UPD_USER_PASS % [user_id, new_password])
+    def update_user_password(user_id, new_password)
+      sender(CMD_UPD_USER_PASS % [user_id, new_password])
       nil
     end
 
     # Delete user
     # Return::
     #   _nil_
-    def s3_delete_user(user_id)
-      sender(CMD_S3_DEL_USER % user_id)
+    def delete_user(user_id)
+      sender(CMD_DEL_USER % user_id)
       nil
     end
 
-    def s3_get_users
-      users = sender(CMD_S3_GET_USERS)[:users]
+    def get_users
+      users = sender(CMD_GET_USERS)[:users]
       users.map {|account| User.new(account) }
     end
 
     # Insert an endpoint in the system
     # Return::
     #   _nil_
-    def s3_set_endpoint(endpoint)
-      sender(CMD_S3_SET_ENDPOINT % endpoint)
+    def set_endpoint(endpoint)
+      sender(CMD_SET_ENDPOINT % endpoint)
       nil
     end
 
     # Remove an endpoint from the system
     # Return::
     #   _nil_
-    def s3_delete_endpoint(endpoint)
-      sender(CMD_S3_DEL_ENDPOINT % endpoint)
+    def delete_endpoint(endpoint)
+      sender(CMD_DEL_ENDPOINT % endpoint)
       nil
     end
-    alias :s3_del_endpoint :s3_delete_endpoint
+    alias :del_endpoint :delete_endpoint
 
     # Retrieve an endpoint in the system
     # Return::
     #   Array of Endpoint
-    def s3_get_endpoints
-      endpoints = sender(CMD_S3_GET_ENDPOINTS)[:endpoints]
+    def get_endpoints
+      endpoints = sender(CMD_GET_ENDPOINTS)[:endpoints]
       endpoints.map {|endpoint| Endpoint.new(endpoint) }
     end
 
     # Add an Bucket in the system
     # Return::
     #   _nil_
-    def s3_add_bucket(bucket_name, access_key_id)
-      sender(CMD_S3_ADD_BUCKET % [bucket_name, access_key_id])
+    def add_bucket(bucket_name, access_key_id)
+      sender(CMD_ADD_BUCKET % [bucket_name, access_key_id])
       nil
     end
 
     # Retrieve all buckets from the system
     # Return::
     #   Array of Bucket
-    def s3_get_buckets
-      buckets = sender(CMD_S3_GET_BUCKETS)[:buckets]
+    def get_buckets
+      buckets = sender(CMD_GET_BUCKETS)[:buckets]
       buckets.map {|bucket| Bucket.new(bucket) }
     end
 
@@ -339,6 +339,6 @@ if __FILE__ == $PROGRAM_NAME
   p m.version
   p m.status
   p m.status("storage_0@127.0.0.1")
-  p m.s3_get_buckets()
+  p m.get_buckets()
   p m.whereis("photo/hawaii-0.jpg")
 end

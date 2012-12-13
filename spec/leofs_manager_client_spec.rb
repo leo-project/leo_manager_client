@@ -36,9 +36,9 @@ NoResultAPIs = {
   :rebalance => 0, 
   :compact => 1, 
   :purge => 1,
-  :s3_set_endpoint => 1, 
-  :s3_del_endpoint => 1, 
-  :s3_add_bucket => 2
+  :set_endpoint => 1, 
+  :del_endpoint => 1, 
+  :add_bucket => 2
 }
 
 include LeoFSManager
@@ -90,49 +90,49 @@ describe LeoFSManager do
       end
     end
 
-    describe "#s3_create_user" do
+    describe "#create_user" do
       it "returns Credential" do
-        subject.s3_create_user("user_id", "password").should be_a Credential
+        subject.create_user("user_id", "password").should be_a Credential
       end 
 
       it "goes with only user_id" do
-        subject.s3_create_user("user_id").should be_a Credential
+        subject.create_user("user_id").should be_a Credential
       end
     end
 
-    describe "#s3_update_user_role" do
+    describe "#update_user_role" do
       it "returns nil" do
-        subject.s3_update_user_role("user_id", "admin").should be_nil
+        subject.update_user_role("user_id", "admin").should be_nil
       end
     end
 
-    describe "#s3_update_user_password" do
+    describe "#update_user_password" do
       it "returns nil" do
-        subject.s3_update_user_password("user_id", "new_password").should be_nil
+        subject.update_user_password("user_id", "new_password").should be_nil
       end
     end
 
-    describe "#s3_delete_user" do
+    describe "#delete_user" do
       it "returns nil" do
-        subject.s3_delete_user("user_id").should be_nil
+        subject.delete_user("user_id").should be_nil
       end
     end
 
-    its(:s3_get_users) do
+    its(:get_users) do
       should be_a Array
       subject.each do |account|
         account.should be_a User
       end
     end
 
-    its(:s3_get_endpoints) do
+    its(:get_endpoints) do
       should be_a Array
       subject.each do |endpoint|
         endpoint.should be_a Endpoint
       end
     end
 
-    its(:s3_get_buckets) do
+    its(:get_buckets) do
       should be_a Array
       subject.each do |buckets|
         buckets.should be_a Bucket
