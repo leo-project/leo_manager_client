@@ -136,7 +136,7 @@ module LeoFSManager
   end
 
   RoleDef = {
-    1 => :normal,
+    1 => :general,
     9 => :admin
   }
   RoleDef.default_proc = proc {|_, key| raise "invalid @user_id: #{key}" }
