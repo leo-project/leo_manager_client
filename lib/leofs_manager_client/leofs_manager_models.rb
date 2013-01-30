@@ -105,7 +105,7 @@ module LeoFSManager
       @checksum  = h[:checksum]
       timestamp = h[:timestamp]
       @timestamp = timestamp.empty? ? timestamp : Time.parse(timestamp)
-      @delete    = h[:delete]
+      @delete    = h[:delete] != 0 # bool
       @num_of_chunks = h[:num_of_chunks]
     end
   end
