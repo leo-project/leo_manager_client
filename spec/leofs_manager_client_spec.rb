@@ -44,6 +44,53 @@ NoResultAPIs = {
 include LeoFSManager
 
 describe LeoFSManager do
+  describe StorageStat do
+    shared_examples_for StorageStat do
+      its(:active_num_of_objects) { should == 0 }
+      its(:total_num_of_objects) { should == 0 }
+      its(:active_size_of_objects) { should == 0 }
+      its(:total_size_of_objects) { should == 0 }
+    end
+
+    context "there is no last compaction" do
+      subject do
+        StorageStat.new(
+          :active_num_of_objects => 0,
+          :total_num_of_objects => 0,
+          :active_size_of_objects => 0,
+          :total_size_of_objects => 0,
+          :last_compaction_start => "____-_-__- __:__:__",
+          :last_compaction_end => "____-_-__- __:__:__"
+        )
+      end
+
+      it_behaves_like StorageStat
+
+      its(:last_compaction_start) { should be_nil }
+      its(:last_compaction_end) { should be_nil }
+    end
+
+    context "there is last compaction" do
+      let(:time_str) { Time.now.to_s }
+
+      subject do
+        StorageStat.new(
+          :active_num_of_objects => 0,
+          :total_num_of_objects => 0,
+          :active_size_of_objects => 0,
+          :total_size_of_objects => 0,
+          :last_compaction_start => time_str,
+          :last_compaction_end => time_str
+        )
+      end
+    
+      it_behaves_like StorageStat
+
+      its(:last_compaction_start) { subject.to_s == time_str }
+      its(:last_compaction_end) { subject.to_s == time_str }
+    end
+  end
+
   describe Client do
     before(:all) do
       Dummy::Manager.new
