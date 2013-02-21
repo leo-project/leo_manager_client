@@ -112,10 +112,26 @@ module LeoFSManager
 
   # Storage Status Model
   class StorageStat
-    attr_reader :total_of_objects
+    attr_reader :active_num_of_objects, :total_num_of_objects,
+                :active_size_of_objects, :total_size_of_objects,
+                :last_compaction_start, :last_compaction_end
+
+    alias total_of_objects total_num_of_objects # for compatibility
 
     def initialize(h)
-      @total_of_objects = h[:total_of_objects]
+      @active_num_of_objects  = h[:active_num_of_objects]
+      @total_num_of_objects   = h[:total_num_of_objects]
+      @active_size_of_objects = h[:active_size_of_objects]
+      @total_size_of_objects  = h[:total_size_of_objects]
+
+      last_compaction_start = h[:last_compaction_start]
+      if last_compaction_start && last_compaction_start != "____-_-__- __:__:__"
+        @last_compaction_start = Time.parse(h[:last_compaction_start])
+      end
+      last_compaction_end = h[:last_compaction_end]
+      if last_compaction_end && last_compaction_end != "____-_-__- __:__:__"
+        @last_compaction_end = Time.parse(h[:last_compaction_end])
+      end
     end
 
     def file_size
