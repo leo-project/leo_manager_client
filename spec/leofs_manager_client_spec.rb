@@ -1,23 +1,23 @@
 # ======================================================================
-# 
+#
 #  LeoFS Manager Client
-# 
+#
 #  Copyright (c) 2012 Rakuten, Inc.
-# 
+#
 #  This file is provided to you under the Apache License,
 #  Version 2.0 (the "License"); you may not use this file
 #  except in compliance with the License.  You may obtain
 #  a copy of the License at
-# 
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #  Unless required by applicable law or agreed to in writing,
 #  software distributed under the License is distributed on an
 #  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 #  KIND, either express or implied.  See the License for the
 #  specific language governing permissions and limitations
 #  under the License.
-# 
+#
 # ======================================================================
 
 require "json"
@@ -31,13 +31,13 @@ $DEBUG = false
 
 # key: api_name, value: num of args
 NoResultAPIs = {
-  :start => 0, 
-  :detach => 1, 
-  :rebalance => 0, 
-  :compact => 1, 
+  :start => 0,
+  :detach => 1,
+  :rebalance => 0,
+  :compact => 1,
   :purge => 1,
-  :set_endpoint => 1, 
-  :del_endpoint => 1, 
+  :set_endpoint => 1,
+  :del_endpoint => 1,
   :add_bucket => 2
 }
 
@@ -54,14 +54,14 @@ describe LeoFSManager do
 
     context "there is no last compaction" do
       subject do
-        StorageStat.new(
-          :active_num_of_objects => 0,
-          :total_num_of_objects => 0,
-          :active_size_of_objects => 0,
-          :total_size_of_objects => 0,
-          :last_compaction_start => "____-_-__- __:__:__",
-          :last_compaction_end => "____-_-__- __:__:__"
-        )
+        StorageStat.new(:active_num_of_objects => 0,
+                        :total_num_of_objects => 0,
+                        :active_size_of_objects => 0,
+                        :total_size_of_objects => 0,
+                        :ratio_of_active_size => "0.0%"
+                        :last_compaction_start => "____-_-__- __:__:__",
+                        :last_compaction_end => "____-_-__- __:__:__"
+                        )
       end
 
       it_behaves_like StorageStat
@@ -83,7 +83,7 @@ describe LeoFSManager do
           :last_compaction_end => time_str
         )
       end
-    
+
       it_behaves_like StorageStat
 
       its(:last_compaction_start) { subject.to_s == time_str }
@@ -128,7 +128,7 @@ describe LeoFSManager do
           where_info.should be_a AssignedFile
           where_info.num_of_chunks.should be_a Integer
         end
-      end    
+      end
     end
 
     describe "#du" do
@@ -140,7 +140,7 @@ describe LeoFSManager do
     describe "#create_user" do
       it "returns Credential" do
         subject.create_user("user_id", "password").should be_a Credential
-      end 
+      end
 
       it "goes with only user_id" do
         subject.create_user("user_id").should be_a Credential
