@@ -26,7 +26,7 @@ require "time"
 require_relative "leofs_manager_client/leofs_manager_models"
 
 module LeoFSManager
-  VERSION = "0.2.16"
+  VERSION = "0.4.0-RC1"
 
   class Client
     CMD_VERSION          = "version"
@@ -39,7 +39,10 @@ module LeoFSManager
     CMD_REBALANCE        = "rebalance"
     CMD_WHEREIS          = "whereis %s"
     CMD_DU               = "du %s"
-    CMD_COMPACT          = "compact %s"
+    CMD_COMPACT_START    = "compact start %s %s %s"
+    CMD_COMPACT_SUSPEND  = "compact suspend %s"
+    CMD_COMPACT_RESUME   = "compact resume %s"
+    CMD_COMPACT_STATUS   = "compact status %s"
     CMD_PURGE            = "purge %s"
     CMD_CRE_USER         = "create-user %s %s"
     CMD_UPD_USER_ROLE    = "update-user-role %s %s"
@@ -66,7 +69,7 @@ module LeoFSManager
       connect
     end
 
-    # servers to connect 
+    # servers to connect
     attr_reader :servers
     # the server currently connected
     attr_reader :current_server
@@ -81,7 +84,7 @@ module LeoFSManager
 
     # Retrieve LeoFS's system status from LeoFS Manager
     # Return::
-    #   Status 
+    #   Status
     def status(node=nil)
       Status.new(sender(CMD_STATUS % node))
     end
@@ -148,12 +151,36 @@ module LeoFSManager
       StorageStat.new(sender(CMD_DU % node))
     end
 
-    # Execute 'compaction'
+    # Execute 'compact start'
     # Return::
     #   _nil_
-    def compact(node)
-      sender(CMD_COMPACT % node)
+    def compact_start(node, num_of_targets, num_of_concurrents)
+      sender(CMD_COMPACT_START % [node, num_of_targets, num_of_concurrents])
       nil
+    end
+
+    # Execute 'compact suspend'
+    # Return::
+    #   _nil_
+    def compact_suspend(node)
+      sender(CMD_COMPACT_SUSPEND % node)
+      nil
+    end
+
+    # Execute 'compact suspend'
+    # Return::
+    #   _nil_
+    def compact_resume(node)
+      sender(CMD_COMPACT_RESUME % node)
+      nil
+    end
+
+    # Execute 'compact status'
+    # Return::
+    #   _nil_
+    def compact_status(node)
+      compaction = sender(CMD_COMPACT_STATUS % node)[:compaction_status]
+      CompactionStatus.new(compaction)
     end
 
     # Purge a cache in gateways
@@ -341,4 +368,6 @@ if __FILE__ == $PROGRAM_NAME
   p m.status("storage_0@127.0.0.1")
   p m.get_buckets()
   p m.whereis("photo/hawaii-0.jpg")
+  p m.du("storage_0@127.0.0.1")
+  p m.compact_status("storage_0@127.0.0.1")
 end

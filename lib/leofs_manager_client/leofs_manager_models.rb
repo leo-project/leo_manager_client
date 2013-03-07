@@ -20,7 +20,10 @@
 #
 # ======================================================================
 module LeoFSManager
+
+  # ==========================
   # System Information Model
+  # ==========================
   class Status
     # Node
     attr_reader :node_stat
@@ -93,7 +96,9 @@ module LeoFSManager
     end
   end
 
+  # ==========================
   # Assigned file info Model
+  # ==========================
   class AssignedFile
     attr_reader :node, :vnode_id, :size, :clock, :checksum, :timestamp, :delete, :num_of_chunks
 
@@ -110,7 +115,9 @@ module LeoFSManager
     end
   end
 
+  # ==========================
   # Storage Status Model
+  # ==========================
   class StorageStat
     attr_reader :active_num_of_objects, :total_num_of_objects,
                 :active_size_of_objects, :total_size_of_objects,
@@ -123,15 +130,9 @@ module LeoFSManager
       @total_num_of_objects   = h[:total_num_of_objects]
       @active_size_of_objects = h[:active_size_of_objects]
       @total_size_of_objects  = h[:total_size_of_objects]
-
-      last_compaction_start = h[:last_compaction_start]
-      if last_compaction_start && last_compaction_start != "____-_-__- __:__:__"
-        @last_compaction_start = Time.parse(h[:last_compaction_start])
-      end
-      last_compaction_end = h[:last_compaction_end]
-      if last_compaction_end && last_compaction_end != "____-_-__- __:__:__"
-        @last_compaction_end = Time.parse(h[:last_compaction_end])
-      end
+      @ratio_of_active_size   = h[:ratio_of_active_size]
+      @last_compaction_start = h[:last_compaction_start]
+      @last_compaction_end = h[:last_compaction_end]
     end
 
     def file_size
@@ -139,7 +140,9 @@ module LeoFSManager
     end
   end
 
-  # S3 Credential
+  # ==========================
+  # S3 Credential Model
+  # ==========================
   class Credential
     # AWS_ACCESS_KEY_ID
     attr_reader :access_key_id
@@ -152,6 +155,9 @@ module LeoFSManager
     end
   end
 
+  # ==========================
+  # Login Info Model
+  # ==========================
   RoleDef = {
     1 => :general,
     9 => :admin
@@ -176,6 +182,9 @@ module LeoFSManager
     end
   end
 
+  # ==========================
+  # User Info Model
+  # ==========================
   class User
     attr_reader :user_id, :role_id, :access_key_id, :created_at
 
@@ -191,7 +200,9 @@ module LeoFSManager
     end
   end
 
-  # Endpoint
+  # ==========================
+  # Endpoint Model
+  # ==========================
   class Endpoint
     # host of the endpoint
     attr_reader :endpoint
@@ -204,7 +215,9 @@ module LeoFSManager
     end
   end
 
+  # ==========================
   # S3-Bucket Model
+  # ==========================
   class Bucket
     # name of bucket
     attr_reader :name
@@ -217,6 +230,27 @@ module LeoFSManager
       @name       = h[:bucket]
       @owner      = h[:owner]
       @created_at = Time.parse(h[:created_at])
+    end
+  end
+
+  # ==========================
+  # Compaction Status Model
+  # ==========================
+  class CompactionStatus
+    attr_reader :status
+    attr_reader :last_compaction_start
+    attr_reader :total_targets
+    attr_reader :num_of_pending_targets
+    attr_reader :num_of_ongoing_targets
+    attr_reader :num_of_out_of_targets
+
+    def initialize(h)
+      @status                 = h[:status]
+      @last_compaction_start  = h[:last_compaction_start]
+      @total_targets          = h[:total_targets]
+      @num_of_pending_targets = h[:num_of_pending_targets]
+      @num_of_ongoing_targets = h[:num_of_ongoing_targets]
+      @num_of_out_of_targets  = h[:num_of_out_of_targets]
     end
   end
 end
