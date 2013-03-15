@@ -121,6 +121,7 @@ module LeoFSManager
   class StorageStat
     attr_reader :active_num_of_objects, :total_num_of_objects,
                 :active_size_of_objects, :total_size_of_objects,
+                :ratio_of_active_size,
                 :last_compaction_start, :last_compaction_end
 
     alias total_of_objects total_num_of_objects # for compatibility
