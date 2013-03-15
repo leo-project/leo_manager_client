@@ -34,7 +34,6 @@ NoResultAPIs = {
   :start => 0,
   :detach => 1,
   :rebalance => 0,
-  :compact => 1,
   :purge => 1,
   :set_endpoint => 1,
   :del_endpoint => 1,
@@ -58,7 +57,7 @@ describe LeoFSManager do
                         :total_num_of_objects => 0,
                         :active_size_of_objects => 0,
                         :total_size_of_objects => 0,
-                        :ratio_of_active_size => "0.0%"
+                        :ratio_of_active_size => "0.0%",
                         :last_compaction_start => "____-_-__- __:__:__",
                         :last_compaction_end => "____-_-__- __:__:__"
                         )
@@ -111,12 +110,9 @@ describe LeoFSManager do
     describe "#status" do
       its(:status) { should be_a Status }
       its("status.system_info") { should be_a Status::System }
-
       its("status.node_list") do
         should be_a Array
-        subject.each do |node|
-          node.should be_a Status::Node
-        end
+        should be_all {|node| node.is_a?(Status::Node) }
       end
     end
 
@@ -167,22 +163,22 @@ describe LeoFSManager do
 
     its(:get_users) do
       should be_a Array
-      subject.each do |account|
-        account.should be_a User
+      should be_all do |account|
+        account.is_a?(User)
       end
     end
 
     its(:get_endpoints) do
       should be_a Array
-      subject.each do |endpoint|
-        endpoint.should be_a Endpoint
+      should be_all do |endpoint|
+        endpoint.is_a?(Endpoint)
       end
     end
 
     its(:get_buckets) do
       should be_a Array
-      subject.each do |buckets|
-        buckets.should be_a Bucket
+      should be_all do |bucket|
+        bucket.is_a?(Bucket)
       end
     end
 

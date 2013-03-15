@@ -121,6 +121,7 @@ module LeoFSManager
   class StorageStat
     attr_reader :active_num_of_objects, :total_num_of_objects,
                 :active_size_of_objects, :total_size_of_objects,
+                :ratio_of_active_size,
                 :last_compaction_start, :last_compaction_end
 
     alias total_of_objects total_num_of_objects # for compatibility
@@ -131,8 +132,20 @@ module LeoFSManager
       @active_size_of_objects = h[:active_size_of_objects]
       @total_size_of_objects  = h[:total_size_of_objects]
       @ratio_of_active_size   = h[:ratio_of_active_size]
-      @last_compaction_start = h[:last_compaction_start]
-      @last_compaction_end = h[:last_compaction_end]
+
+      last_compaction_start = h[:last_compaction_start]
+      if last_compaction_start == "____-_-__- __:__:__"
+        @last_compaction_start = nil # you have never done compaction
+      else
+        @last_compaction_start = Time.parse(last_compaction_start)
+      end
+
+      last_compaction_end = h[:last_compaction_end]
+      if last_compaction_end == "____-_-__- __:__:__"
+        @last_compaction_end = nil
+      else
+        @last_compaction_end = Time.parse(last_compaction_end)
+      end
     end
 
     def file_size
@@ -237,20 +250,23 @@ module LeoFSManager
   # Compaction Status Model
   # ==========================
   class CompactionStatus
-    attr_reader :status
-    attr_reader :last_compaction_start
-    attr_reader :total_targets
-    attr_reader :num_of_pending_targets
-    attr_reader :num_of_ongoing_targets
-    attr_reader :num_of_out_of_targets
+    attr_reader :status, :last_compaction_start,
+                :total_targets, :num_of_pending_targets,
+                :num_of_ongoing_targets, :num_of_out_of_targets
 
     def initialize(h)
       @status                 = h[:status]
-      @last_compaction_start  = h[:last_compaction_start]
       @total_targets          = h[:total_targets]
       @num_of_pending_targets = h[:num_of_pending_targets]
       @num_of_ongoing_targets = h[:num_of_ongoing_targets]
       @num_of_out_of_targets  = h[:num_of_out_of_targets]
+
+      last_compaction_start = h[:last_compaction_start]
+      if last_compaction_start == "____-_-__- __:__:__"
+        @last_compaction_start = nil # you have never done compaction
+      else
+        @last_compaction_start = Time.parse(last_compaction_start)
+      end
     end
   end
 end
