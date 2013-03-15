@@ -65,8 +65,8 @@ describe LeoFSManager do
 
       it_behaves_like StorageStat
 
-      its(:last_compaction_start) { should == "____-_-__- __:__:__" }
-      its(:last_compaction_end) { should == "____-_-__- __:__:__" }
+      its(:last_compaction_start) { should be_nil }
+      its(:last_compaction_end) { should be_nil }
     end
 
     context "there is last compaction" do

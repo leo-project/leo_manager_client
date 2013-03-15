@@ -78,6 +78,16 @@ module Dummy
       ]
     }.to_json
 
+    StorageStat = {
+      :active_num_of_objects => 0,
+      :total_num_of_objects => 0,
+      :active_size_of_objects => 0,
+      :total_size_of_objects => 0,
+      :ratio_of_active_size => 0,
+      :last_compaction_start => "2013-03-13 09:11:04 +0900",
+      :last_compaction_end => "2013-03-13 09:11:04 +0900"
+    }.to_json
+
     GetEndpoints = {:endpoints => [{:endpoint => "s3.amazonaws.com", :created_at=>"2012-09-21 15:08:11 +0900"},
                                    {:endpoint => "localhost",        :created_at=>"2012-09-21 15:08:11 +0900"},
                                    {:endpoint => "foo",              :created_at=>"2012-09-21 18:51:08 +0900"},
@@ -139,6 +149,8 @@ module Dummy
           Response::GetUsers
         when "create-user"
           Response::CreateUser
+        when /^du/
+          Response::StorageStat
         else
           { :result => line }.to_json
         end
