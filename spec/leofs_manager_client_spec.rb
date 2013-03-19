@@ -58,8 +58,8 @@ describe LeoFSManager do
                         :active_size_of_objects => 0,
                         :total_size_of_objects => 0,
                         :ratio_of_active_size => "0.0%",
-                        :last_compaction_start => "____-_-__- __:__:__",
-                        :last_compaction_end => "____-_-__- __:__:__"
+                        :last_compaction_start => "____-__-__ __:__:__",
+                        :last_compaction_end => "____-__-__ __:__:__"
                         )
       end
 
