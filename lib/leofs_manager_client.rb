@@ -155,7 +155,7 @@ module LeoFSManager
     # Return::
     #   _nil_
     def compact_start(node, num_of_targets, num_of_concurrents)
-      sender(CMD_COMPACT_START % [node, num_of_targets, num_of_concurrents])
+      sender(CMD_COMPACT_START % [node, Integer(num_of_targets), Integer(num_of_concurrents)])
       nil
     end
 
