@@ -154,8 +154,14 @@ module LeoFSManager
     # Execute 'compact start'
     # Return::
     #   _nil_
-    def compact_start(node, num_of_targets, num_of_concurrents)
-      sender(CMD_COMPACT_START % [node, Integer(num_of_targets), Integer(num_of_concurrents)])
+    def compact_start(node, num_of_targets_or_all, num_of_concurrents)
+      case num_of_targets_or_all
+      when /^all$/i
+        # do nothing
+      else
+        num_of_targets_or_all = Integer(num_of_targets_or_all) # convert with validation as Integer
+      end
+      sender(CMD_COMPACT_START % [node, num_of_targets_or_all, Integer(num_of_concurrents)])
       nil
     end
 
