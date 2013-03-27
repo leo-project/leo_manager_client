@@ -348,7 +348,9 @@ module LeoFSManager
       begin
         @mutex.synchronize do
           @socket.print "#{command}\r\n"
-          response = JSON.parse(@socket.readline, symbolize_names: true)
+          line = @socket.readline
+          warn line if $DEBUG
+          response = JSON.parse(line, symbolize_names: true)
         end
       rescue EOFError => ex
         warn "EOFError occured (server: #{@current_server})"
