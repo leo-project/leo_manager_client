@@ -26,34 +26,35 @@ require "time"
 require_relative "leofs_manager_client/leofs_manager_models"
 
 module LeoFSManager
-  VERSION = "0.4.2"
+  VERSION = "0.4.3"
 
   class Client
-    CMD_VERSION          = "version"
-    CMD_LOGIN            = "login %s %s"
-    CMD_STATUS           = "status %s"
-    CMD_START            = "start"
-    CMD_DETACH           = "detach %s"
-    CMD_SUSPEND          = "suspend %s"
-    CMD_RESUME           = "resume %s"
-    CMD_REBALANCE        = "rebalance"
-    CMD_WHEREIS          = "whereis %s"
-    CMD_DU               = "du %s"
-    CMD_COMPACT_START    = "compact start %s %s %s"
-    CMD_COMPACT_SUSPEND  = "compact suspend %s"
-    CMD_COMPACT_RESUME   = "compact resume %s"
-    CMD_COMPACT_STATUS   = "compact status %s"
-    CMD_PURGE            = "purge %s"
-    CMD_CRE_USER         = "create-user %s %s"
-    CMD_UPD_USER_ROLE    = "update-user-role %s %s"
-    CMD_UPD_USER_PASS    = "update-user-password %s %s"
-    CMD_DEL_USER         = "delete-user %s"
-    CMD_GET_USERS        = "get-users"
-    CMD_SET_ENDPOINT     = "set-endpoint %s"
-    CMD_DEL_ENDPOINT     = "delete-endpoint %s"
-    CMD_GET_ENDPOINTS    = "get-endpoints"
-    CMD_ADD_BUCKET       = "add-bucket %s %s"
-    CMD_GET_BUCKETS      = "get-buckets"
+    CMD_VERSION           = "version"
+    CMD_LOGIN             = "login %s %s"
+    CMD_STATUS            = "status %s"
+    CMD_START             = "start"
+    CMD_DETACH            = "detach %s"
+    CMD_SUSPEND           = "suspend %s"
+    CMD_RESUME            = "resume %s"
+    CMD_REBALANCE         = "rebalance"
+    CMD_WHEREIS           = "whereis %s"
+    CMD_DU                = "du %s"
+    CMD_COMPACT_START     = "compact start %s %s %s"
+    CMD_COMPACT_START_ALL = "compact start %s all"
+    CMD_COMPACT_SUSPEND   = "compact suspend %s"
+    CMD_COMPACT_RESUME    = "compact resume %s"
+    CMD_COMPACT_STATUS    = "compact status %s"
+    CMD_PURGE             = "purge %s"
+    CMD_CRE_USER          = "create-user %s %s"
+    CMD_UPD_USER_ROLE     = "update-user-role %s %s"
+    CMD_UPD_USER_PASS     = "update-user-password %s %s"
+    CMD_DEL_USER          = "delete-user %s"
+    CMD_GET_USERS         = "get-users"
+    CMD_SET_ENDPOINT      = "set-endpoint %s"
+    CMD_DEL_ENDPOINT      = "delete-endpoint %s"
+    CMD_GET_ENDPOINTS     = "get-endpoints"
+    CMD_ADD_BUCKET        = "add-bucket %s %s"
+    CMD_GET_BUCKETS       = "get-buckets"
 
     USER_ROLES = RoleDef.invert
 
@@ -154,8 +155,14 @@ module LeoFSManager
     # Execute 'compact start'
     # Return::
     #   _nil_
-    def compact_start(node, num_of_targets, num_of_concurrents)
-      sender(CMD_COMPACT_START % [node, num_of_targets, num_of_concurrents])
+    def compact_start(node, num_of_targets_or_all, num_of_concurrents=nil)
+      case num_of_targets_or_all.to_s
+      when /^all$/i
+        sender(CMD_COMPACT_START_ALL % node)
+      else
+        num_of_concurrents = num_of_concurrents ? Integer(num_of_concurrents) : ""
+        sender(CMD_COMPACT_START % [node, Integer(num_of_targets_or_all), num_of_concurrents])
+      end
       nil
     end
 
@@ -342,7 +349,9 @@ module LeoFSManager
       begin
         @mutex.synchronize do
           @socket.print "#{command}\r\n"
-          response = JSON.parse(@socket.readline, symbolize_names: true)
+          line = @socket.readline
+          warn line if $DEBUG
+          response = JSON.parse(line, symbolize_names: true)
         end
       rescue EOFError => ex
         warn "EOFError occured (server: #{@current_server})"
