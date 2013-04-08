@@ -130,7 +130,7 @@ describe LeoFSManager do
         :ets_mem_usage    => 1022392,
         :num_of_procs     => 325,
         :limit_of_procs   => 1048576,
-        :kernel_poll      => true,
+        :kernel_poll      => "true",
         :thread_pool_size => 32,
         :replication_msgs => 0,
         :sync_vnode_msgs  => 0,
@@ -141,9 +141,9 @@ describe LeoFSManager do
         Status::NodeStat.new(config)
       end
 
-      config.each do |key, value|
-        its(key) { should == value }
-      end
+      its(:kernel_poll) { should == (config[:kernel_poll] == "true") }
+      _config = config.reject {|key| key == :kernel_poll }
+      _config.each {|key, value| its(key) { should == value } }
     end
   end
 

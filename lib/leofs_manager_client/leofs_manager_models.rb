@@ -94,8 +94,7 @@ module LeoFSManager
         @@properties.each do |property|
           instance_variable_set("@#{property}", h[property])
         end
-        #XXX: h[:kernel_poll] should be a TrueClass or FalseClass
-        @kernel_poll = h[:kernel_poll] if h.has_key?(:kernel_poll)
+        @kernel_poll = (h[:kernel_poll] == "true") if h.has_key?(:kernel_poll)
       end
     end
   end
