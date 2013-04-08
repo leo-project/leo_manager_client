@@ -26,7 +26,7 @@ require "time"
 require_relative "leofs_manager_client/leofs_manager_models"
 
 module LeoFSManager
-  VERSION = "0.4.3"
+  VERSION = "0.4.4"
 
   class Client
     CMD_VERSION           = "version"
