@@ -239,6 +239,24 @@ describe LeoFSManager do
       end
     end
 
+    describe "#recover_file" do
+      it do
+        subject.recover_file("path").should be_nil
+      end
+    end
+
+    describe "#recover_node" do
+      it do
+        subject.recover_node("node").should be_nil
+      end
+    end
+
+    describe "#recover_ring" do
+      it do
+        subject.recover_ring("node").should be_nil
+      end
+    end
+
     NoResultAPIs.each do |api, num_of_args|
       describe "##{api}" do
         it "returns nil" do
