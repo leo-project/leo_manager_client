@@ -90,6 +90,34 @@ describe LeoFSManager do
     end
   end
 
+  describe Status do
+    describe Status::System do
+      let(:ring_hash) { "1679896365" }
+
+      subject do
+        Status::System.new({
+          :version   => "0.14.0",
+          :n         => "2",
+          :r         => "1",
+          :w         => "1",
+          :d         => "1",
+          :ring_size => "128",
+          :ring_hash_cur  => ring_hash,
+          :ring_hash_prev => ring_hash
+        })
+      end
+
+      [:n, :r, :w, :d, :ring_size].each do |property|
+        its(property) { should be_a Integer }
+      end
+
+      [:ring_cur, :ring_prev].each do |property|
+        its(property) { should be_a String }
+        its(property) { should == Integer(ring_hash).to_s(16) }
+      end
+    end
+  end
+
   describe Client do
     before(:all) do
       Dummy::Manager.new

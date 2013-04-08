@@ -57,8 +57,9 @@ module LeoFSManager
         @w = Integer(h[:w])
         @d = Integer(h[:d])
         @ring_size = Integer(h[:ring_size])
-        @ring_cur  = h[:ring_cur]
-        @ring_prev = h[:ring_prev]
+        #XXX: leo_manager returns ring_hash_(cur|prev) as decimal (not hex)
+        @ring_cur  = Integer(h[:ring_hash_cur]).to_s(16)
+        @ring_prev = Integer(h[:ring_hash_prev]).to_s(16)
       end
     end
 
@@ -71,6 +72,7 @@ module LeoFSManager
         @node  = h[:node]
         @when  = Time.parse(h[:when])
         @state = h[:state]
+        #XXX: these are written in hex
         @ring_cur  = h[:ring_cur]
         @ring_prev = h[:ring_prev]
       end
