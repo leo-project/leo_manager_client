@@ -116,6 +116,35 @@ describe LeoFSManager do
         its(property) { should == Integer(ring_hash).to_s(16) }
       end
     end
+
+    describe Status::NodeStat do
+      config = {
+        :version    => "0.14.0-RC2",
+        :log_dir    => "./log",
+        :ring_cur   => "64212f2d",
+        :ring_prev  => "64212f2d",
+        :vm_version => "5.9.3.1",
+        :total_mem_usage  => 29281552,
+        :system_mem_usage => 11874433,
+        :procs_mem_usage  => 17411895,
+        :ets_mem_usage    => 1022392,
+        :num_of_procs     => 325,
+        :limit_of_procs   => 1048576,
+        :kernel_poll      => "true",
+        :thread_pool_size => 32,
+        :replication_msgs => 0,
+        :sync_vnode_msgs  => 0,
+        :rebalance_msgs   => 0
+      }
+
+      subject do
+        Status::NodeStat.new(config)
+      end
+
+      its(:kernel_poll) { should == (config[:kernel_poll] == "true") }
+      _config = config.reject {|key| key == :kernel_poll }
+      _config.each {|key, value| its(key) { should == value } }
+    end
   end
 
   describe Client do
@@ -207,6 +236,24 @@ describe LeoFSManager do
       should be_a Array
       should be_all do |bucket|
         bucket.is_a?(Bucket)
+      end
+    end
+
+    describe "#recover_file" do
+      it do
+        subject.recover_file("path").should be_nil
+      end
+    end
+
+    describe "#recover_node" do
+      it do
+        subject.recover_node("node").should be_nil
+      end
+    end
+
+    describe "#recover_ring" do
+      it do
+        subject.recover_ring("node").should be_nil
       end
     end
 

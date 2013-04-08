@@ -26,7 +26,7 @@ require "time"
 require_relative "leofs_manager_client/leofs_manager_models"
 
 module LeoFSManager
-  VERSION = "0.4.4"
+  VERSION = "0.4.5"
 
   class Client
     CMD_VERSION           = "version"
@@ -55,6 +55,9 @@ module LeoFSManager
     CMD_GET_ENDPOINTS     = "get-endpoints"
     CMD_ADD_BUCKET        = "add-bucket %s %s"
     CMD_GET_BUCKETS       = "get-buckets"
+    CMD_RECOVER_FILE      = "recover file %s"
+    CMD_RECOVER_NODE      = "recover node %s"
+    CMD_RECOVER_RING      = "recover ring %s"
 
     USER_ROLES = RoleDef.invert
 
@@ -275,6 +278,30 @@ module LeoFSManager
     def get_buckets
       buckets = sender(CMD_GET_BUCKETS)[:buckets]
       buckets.map {|bucket| Bucket.new(bucket) }
+    end
+
+    # Recover file
+    # Return::
+    #   nil
+    def recover_file(path)
+      sender(CMD_RECOVER_FILE % path)
+      nil
+    end
+
+    # Recover node
+    # Return::
+    #   nil
+    def recover_node(node)
+      sender(CMD_RECOVER_NODE % node)
+      nil
+    end
+
+    # Recover ring
+    # Return::
+    #   nil
+    def recover_ring(node)
+      sender(CMD_RECOVER_RING % node)
+      nil
     end
 
     # Disconnect to LeoFS Manager explicitly

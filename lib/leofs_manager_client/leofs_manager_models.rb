@@ -84,7 +84,8 @@ module LeoFSManager
       @@properties = [
         :version, :log_dir, :ring_cur, :ring_prev, :vm_version,
         :total_mem_usage, :system_mem_usage, :procs_mem_usage,
-        :ets_mem_usage, :num_of_procs, :limit_of_procs, :thread_pool_size
+        :ets_mem_usage, :num_of_procs, :limit_of_procs, :thread_pool_size,
+        :replication_msgs, :sync_vnode_msgs, :rebalance_msgs, :kernel_poll
       ]
 
       attr_reader *@@properties
@@ -93,7 +94,7 @@ module LeoFSManager
         @@properties.each do |property|
           instance_variable_set("@#{property}", h[property])
         end
-        @kernel_poll = (h[:kernel_poll] == "true")
+        @kernel_poll = (h[:kernel_poll] == "true") if h.has_key?(:kernel_poll)
       end
     end
   end
