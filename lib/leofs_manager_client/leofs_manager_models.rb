@@ -94,7 +94,7 @@ module LeoFSManager
         @@properties.each do |property|
           instance_variable_set("@#{property}", h[property])
         end
-        @kernel_poll = (h[:kernel_poll] == "true")
+        @kernel_poll = (h[:kernel_poll] == "true") if h.has_key?(:kernel_poll)
       end
     end
   end
