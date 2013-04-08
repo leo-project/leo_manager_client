@@ -84,7 +84,8 @@ module LeoFSManager
       @@properties = [
         :version, :log_dir, :ring_cur, :ring_prev, :vm_version,
         :total_mem_usage, :system_mem_usage, :procs_mem_usage,
-        :ets_mem_usage, :num_of_procs, :limit_of_procs, :thread_pool_size
+        :ets_mem_usage, :num_of_procs, :limit_of_procs, :thread_pool_size,
+        :replication_msgs, :sync_vnode_msgs, :rebalance_msgs
       ]
 
       attr_reader *@@properties
