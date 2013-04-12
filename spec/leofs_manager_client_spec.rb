@@ -37,7 +37,8 @@ NoResultAPIs = {
   :purge => 1,
   :set_endpoint => 1,
   :del_endpoint => 1,
-  :add_bucket => 2
+  :add_bucket => 2,
+  :delete_bucket => 2
 }
 
 include LeoFSManager
