@@ -54,6 +54,7 @@ module LeoFSManager
     CMD_DEL_ENDPOINT      = "delete-endpoint %s"
     CMD_GET_ENDPOINTS     = "get-endpoints"
     CMD_ADD_BUCKET        = "add-bucket %s %s"
+    CMD_DELETE_BUCKET     = "delete-bucket %s %s"
     CMD_GET_BUCKETS       = "get-buckets"
     CMD_RECOVER_FILE      = "recover file %s"
     CMD_RECOVER_NODE      = "recover node %s"
@@ -269,6 +270,14 @@ module LeoFSManager
     #   _nil_
     def add_bucket(bucket_name, access_key_id)
       sender(CMD_ADD_BUCKET % [bucket_name, access_key_id])
+      nil
+    end
+
+    # Delete an Bucket in the system
+    # Return::
+    #   _nil_
+    def delete_bucket(bucket_name, access_key_id)
+      sender(CMD_DELETE_BUCKET % [bucket_name, access_key_id])
       nil
     end
 
