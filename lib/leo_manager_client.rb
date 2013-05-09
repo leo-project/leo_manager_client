@@ -23,9 +23,9 @@ require "socket"
 require "json"
 require "time"
 
-require_relative "leofs_manager_client/leofs_manager_models"
+require_relative "leo_manager_models"
 
-module LeoFSManager
+module LeoManager
   VERSION = "0.4.6"
 
   class Client
@@ -407,7 +407,7 @@ if __FILE__ == $PROGRAM_NAME
   require "pp"
 
   $DEBUG = true
-  m = LeoFSManager::Client.new("localhost:10020", "localhost:10021")
+  m = LeoManager::Client.new("localhost:10020", "localhost:10021")
   p m.version
   p m.status
   p m.status("storage_0@127.0.0.1")
