@@ -22,7 +22,7 @@
 
 require "json"
 require_relative "dummy_tcp_server"
-require_relative "../lib/leofs_manager_client"
+require_relative "../lib/leo_manager_client"
 
 Host = "localhost"
 Port = 50000
