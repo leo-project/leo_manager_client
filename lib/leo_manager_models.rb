@@ -19,7 +19,7 @@
 #  under the License.
 #
 # ======================================================================
-module LeoFSManager
+module LeoManager
 
   # ==========================
   # System Information Model

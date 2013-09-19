@@ -22,7 +22,7 @@
 
 require "json"
 require_relative "dummy_tcp_server"
-require_relative "../lib/leofs_manager_client"
+require_relative "../lib/leo_manager_client"
 
 Host = "localhost"
 Port = 50000
@@ -41,9 +41,9 @@ NoResultAPIs = {
   :delete_bucket => 2
 }
 
-include LeoFSManager
+include LeoManager
 
-describe LeoFSManager do
+describe LeoManager do
   describe StorageStat do
     shared_examples_for StorageStat do
       its(:active_num_of_objects) { should == 0 }
