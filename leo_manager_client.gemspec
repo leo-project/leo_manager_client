@@ -1,10 +1,10 @@
 # -*- encoding: utf-8 -*-
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "leofs_manager_client"
+require "leo_manager_client"
 
 Gem::Specification.new do |gem|
-  gem.name          = "leofs_manager_client"
+  gem.name          = "leo_manager_client"
   gem.version       = LeoManager::VERSION
   gem.authors       = ["Yosuke Hara"]
   gem.email         = ["leofaststorage@gmail.com"]
