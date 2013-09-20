@@ -132,10 +132,7 @@ describe LeoManager do
         :num_of_procs     => 325,
         :limit_of_procs   => 1048576,
         :kernel_poll      => "true",
-        :thread_pool_size => 32,
-        :replication_msgs => 0,
-        :sync_vnode_msgs  => 0,
-        :rebalance_msgs   => 0
+        :thread_pool_size => 32
       }
 
       subject do

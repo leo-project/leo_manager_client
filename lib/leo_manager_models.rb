@@ -25,19 +25,26 @@ module LeoManager
   # System Information Model
   # ==========================
   class Status
-    # Node
-    attr_reader :node_stat
     # System
     attr_reader :system_info
+    # Node Status
+    attr_reader :node_stat
+    # Storage Status
+    attr_reader :storage_stat
+    # Gateway Status
+    attr_reader :gateway_stat
     # Array of Node
     attr_reader :node_list
 
     def initialize(h)
-      @node_stat = NodeStat.new(h[:node_stat]) if h.has_key?(:node_stat)
-      @system_info = System.new(h[:system_info]) if h.has_key?(:system_info)
-      @node_list = h[:node_list].map {|node| Node.new(node) } if h.has_key?(:node_list)
+      @system_info  = System.new(h[:system_info]) if h.has_key?(:system_info)
+      @node_stat    = NodeStat.new(h[:node_stat]) if h.has_key?(:node_stat)
+      @storage_stat = StorageStat.new(h[:node_stat]) if h.has_key?(:node_stat)
+      @gateway_stat = GatewayStat.new(h[:node_stat]) if h.has_key?(:node_stat)
+      @node_list = h[:node_list].map {|node| NodeInfo.new(node) } if h.has_key?(:node_list)
     end
 
+    # System Info
     class System
       attr_reader :version, :ring_size, :ring_cur, :ring_prev
 
@@ -57,14 +64,14 @@ module LeoManager
         @w = Integer(h[:w])
         @d = Integer(h[:d])
         @ring_size = Integer(h[:ring_size])
-        #XXX: leo_manager returns ring_hash_(cur|prev) as decimal (not hex)
+        # leo_manager returns ring_hash_(cur|prev) as decimal (not hex)
         @ring_cur  = Integer(h[:ring_hash_cur]).to_s(16)
         @ring_prev = Integer(h[:ring_hash_prev]).to_s(16)
       end
     end
 
-    # Node Status Model
-    class Node
+    # Node Info
+    class NodeInfo
       attr_reader :type, :node, :state, :ring_cur, :ring_prev, :when
 
       def initialize(h)
@@ -72,7 +79,6 @@ module LeoManager
         @node  = h[:node]
         @when  = Time.parse(h[:when])
         @state = h[:state]
-        #XXX: these are written in hex
         @ring_cur  = h[:ring_cur]
         @ring_prev = h[:ring_prev]
       end
@@ -80,14 +86,11 @@ module LeoManager
       alias joined_at when
     end
 
+    # Node Common Status
     class NodeStat
-      @@properties = [
-        :version, :log_dir, :ring_cur, :ring_prev, :vm_version,
-        :total_mem_usage, :system_mem_usage, :procs_mem_usage,
-        :ets_mem_usage, :num_of_procs, :limit_of_procs, :thread_pool_size,
-        :replication_msgs, :sync_vnode_msgs, :rebalance_msgs, :kernel_poll
-      ]
-
+      @@properties = [:version, :log_dir, :ring_cur, :ring_prev, :vm_version,
+                      :total_mem_usage, :system_mem_usage, :procs_mem_usage,
+                      :ets_mem_usage, :num_of_procs, :limit_of_procs, :thread_pool_size, :kernel_poll]
       attr_reader *@@properties
 
       def initialize(h)
@@ -95,6 +98,34 @@ module LeoManager
           instance_variable_set("@#{property}", h[property])
         end
         @kernel_poll = (h[:kernel_poll] == "true") if h.has_key?(:kernel_poll)
+      end
+    end
+
+    # Storage Status
+    class StorageStat
+      @@properties = [:replication_msgs, :sync_vnode_msgs, :rebalance_msgs]
+      attr_reader *@@properties
+
+      def initialize(h)
+        @@properties.each do |property|
+          instance_variable_set("@#{property}", h[property])
+        end
+      end
+    end
+
+    # Gateway Status
+    class GatewayStat
+      @@properties = [:handler, :port, :ssl_port, :num_of_acceptors, :http_cache,
+                      :cache_workers, :cache_expire, :cache_ram_capacity,
+                      :cache_disc_capacity, :cache_disc_threshold_len, :cache_disc_dir_data,
+                      :cache_disc_dir_journal, :cache_max_content_len, :max_chunked_objs,
+                      :max_len_for_obj, :chunked_obj_len, :threshold_obj_len]
+      attr_reader *@@properties
+
+      def initialize(h)
+        @@properties.each do |property|
+          instance_variable_set("@#{property}", h[property])
+        end
       end
     end
   end
