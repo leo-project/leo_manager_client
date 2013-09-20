@@ -409,10 +409,24 @@ if __FILE__ == $PROGRAM_NAME
   $DEBUG = true
   m = LeoManager::Client.new("localhost:10020", "localhost:10021")
   p m.version
+  p "[status]"
   p m.status
+
+  p "[status storage_0@127.0.0.1]"
   p m.status("storage_0@127.0.0.1")
+
+  p "[status gateway_0@127.0.0.1]"
+  p m.status("gateway_0@127.0.0.1")
+
+  p "[get-buckets]"
   p m.get_buckets()
+
+  p "[whereis photo/hawaii-0.jpg]"
   p m.whereis("photo/hawaii-0.jpg")
+
+  p "[du storage_0@127.0.0.1]"
   p m.du("storage_0@127.0.0.1")
+
+  p "[compact status storage_0@127.0.0.1]"
   p m.compact_status("storage_0@127.0.0.1")
 end
