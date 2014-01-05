@@ -56,6 +56,7 @@ module LeoManager
     CMD_ADD_BUCKET        = "add-bucket %s %s"
     CMD_DELETE_BUCKET     = "delete-bucket %s %s"
     CMD_GET_BUCKETS       = "get-buckets"
+    CMD_UPDATE_ACL        = "update-acl %s %s %s"
     CMD_RECOVER_FILE      = "recover file %s"
     CMD_RECOVER_NODE      = "recover node %s"
     CMD_RECOVER_RING      = "recover ring %s"
@@ -287,6 +288,13 @@ module LeoManager
     def get_buckets
       buckets = sender(CMD_GET_BUCKETS)[:buckets]
       buckets.map {|bucket| Bucket.new(bucket) }
+    end
+
+    # Update acl of a bucket
+    # Return::
+    #   _nil_
+    def update_acl(bucket, accesskey, acl)
+      Credential.new(sender(CMD_UPDATE_ACL % [bucket, accesskey, acl]))
     end
 
     # Recover file

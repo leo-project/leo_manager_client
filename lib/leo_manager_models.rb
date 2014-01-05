@@ -118,8 +118,10 @@ module LeoManager
       @@properties = [:handler, :port, :ssl_port, :num_of_acceptors, :http_cache,
                       :cache_workers, :cache_expire, :cache_ram_capacity,
                       :cache_disc_capacity, :cache_disc_threshold_len, :cache_disc_dir_data,
-                      :cache_disc_dir_journal, :cache_max_content_len, :max_chunked_objs,
-                      :max_len_for_obj, :chunked_obj_len, :threshold_obj_len]
+                      :cache_disc_dir_journal, :cache_max_content_len,
+                      :max_chunked_objs, :max_len_for_obj, :chunked_obj_len,
+                      :reading_chunked_obj_len, :threshold_of_chunk_len
+                     ]
       attr_reader *@@properties
 
       def initialize(h)
