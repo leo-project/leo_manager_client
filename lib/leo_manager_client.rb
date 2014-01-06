@@ -2,7 +2,7 @@
 #
 #  LeoFS Manager Client
 #
-#  Copyright (c) 2012 Rakuten, Inc.
+#  Copyright (c) 2012-2014 Rakuten, Inc.
 #
 #  This file is provided to you under the Apache License,
 #  Version 2.0 (the "License"); you may not use this file
@@ -26,7 +26,7 @@ require "time"
 require_relative "leo_manager_models"
 
 module LeoManager
-  VERSION = "0.4.8"
+  VERSION = "0.4.9"
 
   class Client
     CMD_VERSION           = "version"
@@ -56,6 +56,7 @@ module LeoManager
     CMD_ADD_BUCKET        = "add-bucket %s %s"
     CMD_DELETE_BUCKET     = "delete-bucket %s %s"
     CMD_GET_BUCKETS       = "get-buckets"
+    CMD_UPDATE_ACL        = "update-acl %s %s %s"
     CMD_RECOVER_FILE      = "recover file %s"
     CMD_RECOVER_NODE      = "recover node %s"
     CMD_RECOVER_RING      = "recover ring %s"
@@ -80,242 +81,292 @@ module LeoManager
     attr_reader :current_server
 
     # Retrieve LeoFS's version from LeoFS Manager
-    # Return::
+    # ==== Return
     #   Version of LeoFS
     def version
-      h = sender(CMD_VERSION)
+      h = call(CMD_VERSION)
       return h[:result]
     end
 
     # Retrieve LeoFS's system status from LeoFS Manager
-    # Return::
+    # ==== Args
+    #   node :: Node
+    # ==== Return
     #   Status
     def status(node=nil)
-      Status.new(sender(CMD_STATUS % node))
+      Status.new(call(CMD_STATUS % node))
     end
 
     # Login as specifies user
-    # Return::
+    # ==== Args
+    #   user_id  :: user id
+    #   password :: password
+    # ==== Return
     #   LoginInfo
     def login(user_id, password)
-      LoginInfo.new(sender(CMD_LOGIN % [user_id, password]))
+      LoginInfo.new(call(CMD_LOGIN % [user_id, password]))
     end
 
     # Launch LeoFS's storage cluster
-    # Return::
-    #   _nil_
+    # ==== Return
+    #   Result
     def start
-      sender(CMD_START)
-      nil
+      Result.new(call(CMD_START))
     end
 
     # Leave a node from the storage cluster
-    # Return::
-    #   _nil_
+    # ==== Args
+    #   node :: a storage node
+    # ==== Return
+    #   Result
     def detach(node)
-      sender(CMD_DETACH % node)
-      nil
+      Result.new(call(CMD_DETACH % node))
     end
 
     # Suspend a node in the storage cluster
-    # Return::
-    #   _nil_
+    # ==== Args
+    #   node :: a storage node
+    # ==== Return
+    #   Result
     def suspend(node)
-      sender(CMD_SUSPEND % node)
-      nil
+      Result.new(call(CMD_SUSPEND % node))
     end
 
     # Resume a node in the storage cluster
-    # Return::
-    #   _nil_
+    # ==== Args
+    #   node :: a storage node
+    # ==== Return
+    #   Result
     def resume(node)
-      sender(CMD_RESUME % node)
-      nil
+      Result.new(call(CMD_RESUME % node))
     end
 
-    # Execute 'rebalance' in the storage cluster
-    # Return::
-    #   _nil_
+    # Execute relocate of objects - "rebalance" in the storage cluster
+    # ==== Return
+    #   Result
     def rebalance
-      sender(CMD_REBALANCE)
-      nil
+      Result.new(call(CMD_REBALANCE))
     end
 
     # Retrieve assigned file information
-    # Return::
+    # ==== Args
+    #   path :: an object path
+    # ==== Return
     #   Array of AssignedFile
     def whereis(path)
-      assigned_info = sender(CMD_WHEREIS % path)[:assigned_info]
+      assigned_info = call(CMD_WHEREIS % path)[:assigned_info]
       assigned_info.map {|h| AssignedFile.new(h)}
     end
 
     # Retrieve storage status from the storage
-    # Return::
+    # ==== Args
+    #   node :: a storage node
+    # ==== Return
     #   StorageStat
     def du(node)
-      StorageStat.new(sender(CMD_DU % node))
+      StorageStat.new(call(CMD_DU % node))
     end
 
-    # Execute 'compact start'
-    # Return::
-    #   _nil_
+    # Execute data comaction in a storage node
+    # ==== Args
+    #   node :: a storage node
+    #   num_of_targets_or_all :: a number of targets - [integer | all]
+    #   num_of_concurrents    :: a number of concurrents
+    # ==== Return
+    #   Result
     def compact_start(node, num_of_targets_or_all, num_of_concurrents=nil)
       case num_of_targets_or_all.to_s
       when /^all$/i
-        sender(CMD_COMPACT_START_ALL % node)
+        Result.new(call(CMD_COMPACT_START_ALL % node))
       else
         num_of_concurrents = num_of_concurrents ? Integer(num_of_concurrents) : ""
-        sender(CMD_COMPACT_START % [node, Integer(num_of_targets_or_all), num_of_concurrents])
+        Result.new(call(CMD_COMPACT_START % [node, Integer(num_of_targets_or_all), num_of_concurrents]))
       end
-      nil
     end
 
     # Execute 'compact suspend'
-    # Return::
-    #   _nil_
+    # ==== Args
+    #   node :: a storage node
+    # ==== Return
+    #   Result
     def compact_suspend(node)
-      sender(CMD_COMPACT_SUSPEND % node)
-      nil
+      Result.new(call(CMD_COMPACT_SUSPEND % node))
     end
 
     # Execute 'compact suspend'
-    # Return::
-    #   _nil_
+    # ==== Args
+    #   node :: a storage node
+    # ==== Return
+    #   Result
     def compact_resume(node)
-      sender(CMD_COMPACT_RESUME % node)
-      nil
+      Result.new(call(CMD_COMPACT_RESUME % node))
     end
 
     # Execute 'compact status'
-    # Return::
-    #   _nil_
+    # ==== Args
+    #   node :: a storage node
+    # ==== Return
+    #   CompactionStatus
     def compact_status(node)
-      compaction = sender(CMD_COMPACT_STATUS % node)[:compaction_status]
+      compaction = call(CMD_COMPACT_STATUS % node)[:compaction_status]
       CompactionStatus.new(compaction)
     end
 
-    # Purge a cache in gateways
-    # Return::
-    #   _nil_
+    # Purge a cache in the gateways
+    # ==== Args
+    #   path :: an object path
+    # ==== Return
+    #   Result
     def purge(path)
-      sender(CMD_PURGE % path)
-      nil
+      Result.new(call(CMD_PURGE % path))
     end
 
-    # Generate credential for LeoFS
-    # Return::
+    # Generate credential of a user
+    # ==== Args
+    #   user_id  :: user id
+    #   password :: password
+    # ==== Return
     #   Credential
     def create_user(user_id, password=nil)
-      Credential.new(sender(CMD_CRE_USER % [user_id, password]))
+      Credential.new(call(CMD_CRE_USER % [user_id, password]))
     end
 
-    # Update user role
-    # Return ::
-    #   _nil_
+    # Update role of a user
+    # ==== Args
+    #   user_id :: user id
+    #   role    :: operation role of a user
+    # ==== Return
+    #   Result
     def update_user_role(user_id, role)
       role = role.to_sym if role.is_a? String
       role = USER_ROLES[role] if role.is_a? Symbol
-      sender(CMD_UPD_USER_ROLE % [user_id, role])
-      nil
+      Result.new(call(CMD_UPD_USER_ROLE % [user_id, role]))
     end
 
-    # Update user password
-    # Return::
-    #   _nil_
+    # Update password of a user
+    # ==== Args
+    #   user_id      :: user id
+    #   new_password :: new password
+    # ==== Return
+    #   Result
     def update_user_password(user_id, new_password)
-      sender(CMD_UPD_USER_PASS % [user_id, new_password])
-      nil
+      Result.new(call(CMD_UPD_USER_PASS % [user_id, new_password]))
     end
 
-    # Delete user
-    # Return::
-    #   _nil_
+    # Delete a user
+    # ==== Args
+    #   user_id :: user id
+    # ==== Return
+    #   Result
     def delete_user(user_id)
-      sender(CMD_DEL_USER % user_id)
-      nil
+      Result.new(call(CMD_DEL_USER % user_id))
     end
 
+    # Retrieve a user
+    # ==== Return
+    #   Map
     def get_users
-      users = sender(CMD_GET_USERS)[:users]
+      users = call(CMD_GET_USERS)[:users]
       users.map {|account| User.new(account) }
     end
 
     # Insert an endpoint in the system
-    # Return::
-    #   _nil_
+    # ==== Args
+    #   endpoint :: an endpoint
+    # ==== Return
+    #   Result
     def set_endpoint(endpoint)
-      sender(CMD_SET_ENDPOINT % endpoint)
-      nil
+      Result.new(call(CMD_SET_ENDPOINT % endpoint))
     end
 
     # Remove an endpoint from the system
-    # Return::
-    #   _nil_
+    # ==== Args
+    #   endpoint :: an endpoint
+    # ==== Return
+    #   nil
     def delete_endpoint(endpoint)
-      sender(CMD_DEL_ENDPOINT % endpoint)
-      nil
+      Result.new(call(CMD_DEL_ENDPOINT % endpoint))
     end
     alias :del_endpoint :delete_endpoint
 
     # Retrieve an endpoint in the system
-    # Return::
+    # ==== Return
     #   Array of Endpoint
     def get_endpoints
-      endpoints = sender(CMD_GET_ENDPOINTS)[:endpoints]
+      endpoints = call(CMD_GET_ENDPOINTS)[:endpoints]
       endpoints.map {|endpoint| Endpoint.new(endpoint) }
     end
 
     # Add an Bucket in the system
-    # Return::
-    #   _nil_
+    # ==== Args
+    #   bucket_name :: a bucket name
+    #   access_key_id :: access key id
+    # ==== Return
+    #   Result
     def add_bucket(bucket_name, access_key_id)
-      sender(CMD_ADD_BUCKET % [bucket_name, access_key_id])
-      nil
+      Result.new(call(CMD_ADD_BUCKET % [bucket_name, access_key_id]))
     end
 
     # Delete an Bucket in the system
-    # Return::
-    #   _nil_
+    # ==== Args
+    #   bucket_name :: a bucket name
+    #   access_key_id :: access key id
+    # ==== Return
+    #   Result
     def delete_bucket(bucket_name, access_key_id)
-      sender(CMD_DELETE_BUCKET % [bucket_name, access_key_id])
-      nil
+      Result.new(call(CMD_DELETE_BUCKET % [bucket_name, access_key_id]))
     end
 
     # Retrieve all buckets from the system
-    # Return::
+    # ==== Return
     #   Array of Bucket
     def get_buckets
-      buckets = sender(CMD_GET_BUCKETS)[:buckets]
+      buckets = call(CMD_GET_BUCKETS)[:buckets]
       buckets.map {|bucket| Bucket.new(bucket) }
     end
 
+    # Update acl of a bucket
+    # ==== Args
+    #   bucket_name   :: a bucket name
+    #   access_key_id :: access key id
+    #   acl :: acl of a bucket
+    # ==== Return
+    #   Result
+    def update_acl(bucket, accesskey, acl)
+      Result.new(call(CMD_UPDATE_ACL % [bucket, accesskey, acl]))
+    end
+
     # Recover file
-    # Return::
-    #   nil
+    # ==== Args
+    #   path :: an object path
+    # ==== Return
+    #   Result
     def recover_file(path)
-      sender(CMD_RECOVER_FILE % path)
-      nil
+      Result.new(call(CMD_RECOVER_FILE % path))
     end
 
     # Recover node
-    # Return::
-    #   nil
+    # ==== Args
+    #   node :: a storage node
+    # ==== Return
+    #   Result
     def recover_node(node)
-      sender(CMD_RECOVER_NODE % node)
-      nil
+      Result.new(call(CMD_RECOVER_NODE % node))
     end
 
     # Recover ring
-    # Return::
-    #   nil
+    # ==== Args
+    #   node :: a storage node
+    # ==== Return
+    #   Result
     def recover_ring(node)
-      sender(CMD_RECOVER_RING % node)
+      Result.new(call(CMD_RECOVER_RING % node))
       nil
     end
 
     # Disconnect to LeoFS Manager explicitly
-    # Return::
-    #   _nil_
+    # ==== Return
+    #   Result
     def disconnect!
       disconnect
     end
@@ -380,7 +431,7 @@ module LeoManager
     # Send a request to LeoFS Manager
     # Return::
     #   Hash
-    def sender(command)
+    def call(command)
       response = nil
       begin
         @mutex.synchronize do
@@ -393,6 +444,7 @@ module LeoManager
         warn "EOFError occured (server: #{@current_server})"
         reconnect
       rescue => ex
+        reconnect
         raise "An Error occured: #{ex.class} (server: #{@current_server})\n#{ex.message}"
       else
         raise response[:error] if response.has_key?(:error)
@@ -409,6 +461,7 @@ if __FILE__ == $PROGRAM_NAME
   $DEBUG = true
   m = LeoManager::Client.new("localhost:10020", "localhost:10021")
   p m.version
+
   p "[status]"
   p m.status
 
@@ -417,6 +470,12 @@ if __FILE__ == $PROGRAM_NAME
 
   p "[status gateway_0@127.0.0.1]"
   p m.status("gateway_0@127.0.0.1")
+
+  p "[add-bucket]"
+  p m.add_bucket("photo", "05236")
+
+  p "[update-acl]"
+  p m.update_acl("photo", "05236", "public-read")
 
   p "[get-buckets]"
   p m.get_buckets()
