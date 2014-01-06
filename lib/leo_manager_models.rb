@@ -2,7 +2,7 @@
 #
 #  LeoFS Manager Client
 #
-#  Copyright (c) 2012 Rakuten, Inc.
+#  Copyright (c) 2012-2014 Rakuten, Inc.
 #
 #  This file is provided to you under the Apache License,
 #  Version 2.0 (the "License"); you may not use this file
@@ -20,6 +20,23 @@
 #
 # ======================================================================
 module LeoManager
+
+  # ==========================
+  # Common Result
+  # ==========================
+  class Result
+    attr_reader :result
+
+    def initialize(h)
+      error = h[:error]
+      if error == nil
+        @result = h[:result]
+      else
+        @result = error
+      end
+    end
+  end
+
 
   # ==========================
   # System Information Model
@@ -156,9 +173,9 @@ module LeoManager
   # ==========================
   class StorageStat
     attr_reader :active_num_of_objects, :total_num_of_objects,
-                :active_size_of_objects, :total_size_of_objects,
-                :ratio_of_active_size,
-                :last_compaction_start, :last_compaction_end
+    :active_size_of_objects, :total_size_of_objects,
+    :ratio_of_active_size,
+    :last_compaction_start, :last_compaction_end
 
     alias total_of_objects total_num_of_objects # for compatibility
 
@@ -287,8 +304,8 @@ module LeoManager
   # ==========================
   class CompactionStatus
     attr_reader :status, :last_compaction_start,
-                :total_targets, :num_of_pending_targets,
-                :num_of_ongoing_targets, :num_of_out_of_targets
+    :total_targets, :num_of_pending_targets,
+    :num_of_ongoing_targets, :num_of_out_of_targets
 
     def initialize(h)
       @status                 = h[:status]
