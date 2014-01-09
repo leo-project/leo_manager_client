@@ -289,13 +289,16 @@ module LeoManager
     attr_reader :name
     # name of the bucket's owner
     attr_reader :owner
+    # permissions
+    attr_reader :permissions
     # when the bucket created at
     attr_reader :created_at
 
     def initialize(h)
-      @name       = h[:bucket]
-      @owner      = h[:owner]
-      @created_at = Time.parse(h[:created_at])
+      @name        = h[:bucket]
+      @owner       = h[:owner]
+      @permissions = h[:permissions]
+      @created_at  = Time.parse(h[:created_at])
     end
   end
 
