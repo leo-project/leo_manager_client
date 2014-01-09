@@ -26,7 +26,7 @@ require "time"
 require_relative "leo_manager_models"
 
 module LeoManager
-  VERSION = "0.4.9"
+  VERSION = "0.4.10"
 
   class Client
     CMD_VERSION           = "version"
@@ -474,10 +474,19 @@ if __FILE__ == $PROGRAM_NAME
   p "[add-bucket]"
   p m.add_bucket("photo", "05236")
 
+  p "[get-buckets #1]"
+  p m.get_buckets()
+
   p "[update-acl]"
   p m.update_acl("photo", "05236", "public-read")
 
-  p "[get-buckets]"
+  p "[get-buckets #2]"
+  p m.get_buckets()
+
+  p "[update-acl]"
+  p m.update_acl("photo", "05236", "public-read-write")
+
+  p "[get-buckets #3]"
   p m.get_buckets()
 
   p "[whereis photo/hawaii-0.jpg]"
