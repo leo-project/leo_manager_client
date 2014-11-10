@@ -127,7 +127,10 @@ module LeoManager
                       :wd_io_enabled,
                       :wd_io_interval,
                       :wd_io_threshold_input_per_sec,
-                      :wd_io_threshold_output_per_sec
+                      :wd_io_threshold_output_per_sec,
+                      :wd_disk_interval,
+                      :wd_disk_threshold_disk_use,
+                      :wd_disk_threshold_disk_util
                      ]
       attr_reader *@@properties
 
@@ -143,10 +146,7 @@ module LeoManager
     class StorageStat
       @@properties = [:replication_msgs,
                       :sync_vnode_msgs,
-                      :rebalance_msgs,
-                      :wd_disk_interval,
-                      :wd_disk_threshold_disk_use,
-                      :wd_disk_threshold_disk_util
+                      :rebalance_msgs
                      ]
       attr_reader *@@properties
 

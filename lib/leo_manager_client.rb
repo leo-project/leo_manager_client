@@ -26,7 +26,7 @@ require "time"
 require_relative "leo_manager_models"
 
 module LeoManager
-  VERSION = "0.4.11"
+  VERSION = "0.4.12"
 
   class Client
     CMD_VERSION           = "version"
@@ -488,9 +488,6 @@ if __FILE__ == $PROGRAM_NAME
 
   p "[get-buckets #3]"
   p m.get_buckets()
-
-  p "[whereis photo/hawaii-0.jpg]"
-  p m.whereis("photo/hawaii-0.jpg")
 
   p "[du storage_0@127.0.0.1]"
   p m.du("storage_0@127.0.0.1")
