@@ -128,6 +128,7 @@ module LeoManager
                       :wd_io_interval,
                       :wd_io_threshold_input_per_sec,
                       :wd_io_threshold_output_per_sec,
+                      :wd_disk_enabled,
                       :wd_disk_interval,
                       :wd_disk_threshold_disk_use,
                       :wd_disk_threshold_disk_util
