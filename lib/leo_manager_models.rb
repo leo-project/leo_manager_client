@@ -105,9 +105,30 @@ module LeoManager
 
     # Node Common Status
     class NodeStat
-      @@properties = [:version, :log_dir, :ring_cur, :ring_prev, :vm_version,
-                      :total_mem_usage, :system_mem_usage, :procs_mem_usage,
-                      :ets_mem_usage, :num_of_procs, :limit_of_procs, :thread_pool_size, :kernel_poll]
+      @@properties = [:version,
+                      :log_dir,
+                      :ring_cur,
+                      :ring_prev,
+                      :vm_version,
+                      :total_mem_usage,
+                      :system_mem_usage,
+                      :procs_mem_usage,
+                      :ets_mem_usage,
+                      :num_of_procs,
+                      :limit_of_procs,
+                      :thread_pool_size,
+                      :kernel_poll,
+                      :wd_rex_interval,
+                      :wd_rex_threshold_mem_capacity,
+                      :wd_cpu_enabled,
+                      :wd_cpu_interval,
+                      :wd_cpu_threshold_cpu_load_avg,
+                      :wd_cpu_threshold_cpu_util,
+                      :wd_io_enabled,
+                      :wd_io_interval,
+                      :wd_io_threshold_input_per_sec,
+                      :wd_io_threshold_output_per_sec
+                     ]
       attr_reader *@@properties
 
       def initialize(h)
@@ -120,7 +141,13 @@ module LeoManager
 
     # Storage Status
     class StorageStat
-      @@properties = [:replication_msgs, :sync_vnode_msgs, :rebalance_msgs]
+      @@properties = [:replication_msgs,
+                      :sync_vnode_msgs,
+                      :rebalance_msgs,
+                      :wd_disk_interval,
+                      :wd_disk_threshold_disk_use,
+                      :wd_disk_threshold_disk_util
+                     ]
       attr_reader *@@properties
 
       def initialize(h)
@@ -132,12 +159,24 @@ module LeoManager
 
     # Gateway Status
     class GatewayStat
-      @@properties = [:handler, :port, :ssl_port, :num_of_acceptors, :http_cache,
-                      :cache_workers, :cache_expire, :cache_ram_capacity,
-                      :cache_disc_capacity, :cache_disc_threshold_len, :cache_disc_dir_data,
-                      :cache_disc_dir_journal, :cache_max_content_len,
-                      :max_chunked_objs, :max_len_for_obj, :chunked_obj_len,
-                      :reading_chunked_obj_len, :threshold_of_chunk_len
+      @@properties = [:handler,
+                      :port,
+                      :ssl_port,
+                      :num_of_acceptors,
+                      :http_cache,
+                      :cache_workers,
+                      :cache_expire,
+                      :cache_ram_capacity,
+                      :cache_disc_capacity,
+                      :cache_disc_threshold_len,
+                      :cache_disc_dir_data,
+                      :cache_disc_dir_journal,
+                      :cache_max_content_len,
+                      :max_chunked_objs,
+                      :max_len_for_obj,
+                      :chunked_obj_len,
+                      :reading_chunked_obj_len,
+                      :threshold_of_chunk_len
                      ]
       attr_reader *@@properties
 
