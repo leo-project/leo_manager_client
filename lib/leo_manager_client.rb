@@ -26,7 +26,7 @@ require "time"
 require_relative "leo_manager_models"
 
 module LeoManager
-  VERSION = "0.4.11"
+  VERSION = "0.4.12"
 
   class Client
     CMD_VERSION           = "version"
